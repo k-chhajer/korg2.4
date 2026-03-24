@@ -32,7 +32,7 @@ def role_distinctiveness(role_outputs: dict[str, str]) -> float:
     if len(role_outputs) < 2:
         return 0.0
     distances: list[float] = []
-    for left, right in combinations(role_outputs.keys(), 2):
+    for left, right in combinations(sorted(role_outputs.keys()), 2):
         l_tokens = set(role_outputs[left].lower().split())
         r_tokens = set(role_outputs[right].lower().split())
         union = l_tokens | r_tokens

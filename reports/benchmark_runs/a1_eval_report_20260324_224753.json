@@ -1,0 +1,1886 @@
+{
+  "run_id": "A1",
+  "task_count": 8,
+  "mean_keyword_score": 1.0,
+  "mean_role_distinctiveness": 0.9396969989075252,
+  "mean_critique_acceptance_rate": 1.0,
+  "per_task": [
+    {
+      "task_id": "eval_001",
+      "keyword_score": 1.0,
+      "role_distinctiveness": 0.9396969989075252,
+      "critique_acceptance_rate": 1.0,
+      "final_answer": "facts: Use a provider-backed Qwen runtime for generation and an explicit search tool for Harper instead of collapsing both concerns into one backend.\nlogic: Keep the first version sequential with strong structure, fallbacks, and tool call timeouts before optimizing latency.\nalternative: If you do not want a paid search API yet, start with DuckDuckGo as a best-effort fallback and move to Serper once reliability matters.\nfinal recommendation: build the captain-harper-benjamin-lucas-captain loop now, wire it to OpenRouter for Qwen, and treat search reliability as the first external dependency.",
+      "run_record": {
+        "run_id": "A1",
+        "task_id": "eval_001",
+        "seed": 314159,
+        "user_query": "Design a phased migration strategy for a legacy Python monolith to services.",
+        "captain_plan": "{\n  \"overall_strategy\": \"Split work into grounded research, independent reasoning, and a review pass before synthesis.\",\n  \"harper_task\": \"Search for recent, high-signal facts and implementation patterns that matter for the user query.\",\n  \"benjamin_task\": \"Stress-test the architecture, identify edge cases, and produce a defensible implementation path.\",\n  \"lucas_task\": \"Review Harper and Benjamin, identify gaps, add human-centered framing, and tighten the recommendation.\",\n  \"synthesis_checks\": [\n    \"Separate evidence from inference.\",\n    \"Call out missing infrastructure or API requirements.\",\n    \"Produce a practical first iteration, not an idealized design.\"\n  ],\n  \"deliverable_shape\": \"practical implementation guidance with explicit next steps\"\n}",
+        "role_outputs": {
+          "harper": "summary: Web research suggests using a hosted chat-completions backend and a separate search provider rather than trying to force both into one layer.\nevidence: [1] Hosted Qwen inference can sit behind a generic OpenAI-compatible API. [2] Search works best when query generation and result grounding are explicit steps.\nopen_questions: Confirm which search provider and API budget are acceptable.\nsource_notes: Prefer provider APIs over ad-hoc scraping when reliability matters.",
+          "benjamin": "logic: The lowest-risk first iteration is a sequential pipeline with captain planning, Harper search, Benjamin analysis, Lucas review, and captain synthesis.\nassumptions: External APIs may fail or rate-limit, so tool calls need fallbacks and timeouts.\nfailure_modes: search drift, citation loss, weak decomposition, and overlong prompts.\nchecks: enforce structured captain plans, cap search queries, and keep the backend interface provider-agnostic.",
+          "lucas": "critique: Harper adds evidence, but Benjamin should define the decision boundary more explicitly when evidence is thin.\nuser_impact: The answer should tell the user what keys they need and what still works without them.\ncommunication_advice: Lead with the working architecture, then list optional upgrades.\nrecommendation: Ship a robust brute-force version first and improve latency after the tooling loop is trustworthy."
+        },
+        "critiques": {
+          "lucas": {
+            "challenge_type": "alternative_approach",
+            "target": "search provider is underspecified",
+            "correction": "state required API keys and fallback behavior explicitly"
+          }
+        },
+        "final_answer": "facts: Use a provider-backed Qwen runtime for generation and an explicit search tool for Harper instead of collapsing both concerns into one backend.\nlogic: Keep the first version sequential with strong structure, fallbacks, and tool call timeouts before optimizing latency.\nalternative: If you do not want a paid search API yet, start with DuckDuckGo as a best-effort fallback and move to Serper once reliability matters.\nfinal recommendation: build the captain-harper-benjamin-lucas-captain loop now, wire it to OpenRouter for Qwen, and treat search reliability as the first external dependency.",
+        "search_traces": [
+          {
+            "query": "Design a phased migration strategy for a legacy Python monolith to services. architecture examples",
+            "results": [
+              {
+                "title": "Mock result 1 for Design a phased migration strategy for a legacy Python monolith to services. architecture examples",
+                "url": "https://example.test/search/1?q=Design%20a%20phased%20migration%20strategy%20for%20a%20legacy%20Python%20monolith%20to%20services.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 1 for 'Design a phased migration strategy for a legacy Python monolith to services. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Design a phased migration strategy for a legacy Python monolith to services. architecture examples",
+                "url": "https://example.test/search/2?q=Design%20a%20phased%20migration%20strategy%20for%20a%20legacy%20Python%20monolith%20to%20services.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 2 for 'Design a phased migration strategy for a legacy Python monolith to services. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Design a phased migration strategy for a legacy Python monolith to services. architecture examples",
+                "url": "https://example.test/search/3?q=Design%20a%20phased%20migration%20strategy%20for%20a%20legacy%20Python%20monolith%20to%20services.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 3 for 'Design a phased migration strategy for a legacy Python monolith to services. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Design a phased migration strategy for a legacy Python monolith to services. architecture examples",
+                "url": "https://example.test/search/4?q=Design%20a%20phased%20migration%20strategy%20for%20a%20legacy%20Python%20monolith%20to%20services.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 4 for 'Design a phased migration strategy for a legacy Python monolith to services. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Design a phased migration strategy for a legacy Python monolith to services. architecture examples",
+                "url": "https://example.test/search/5?q=Design%20a%20phased%20migration%20strategy%20for%20a%20legacy%20Python%20monolith%20to%20services.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 5 for 'Design a phased migration strategy for a legacy Python monolith to services. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          },
+          {
+            "query": "Design a phased migration strategy for a legacy Python monolith to services. Qwen OpenRouter setup",
+            "results": [
+              {
+                "title": "Mock result 1 for Design a phased migration strategy for a legacy Python monolith to services. Qwen OpenRouter setup",
+                "url": "https://example.test/search/1?q=Design%20a%20phased%20migration%20strategy%20for%20a%20legacy%20Python%20monolith%20to%20services.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 1 for 'Design a phased migration strategy for a legacy Python monolith to services. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Design a phased migration strategy for a legacy Python monolith to services. Qwen OpenRouter setup",
+                "url": "https://example.test/search/2?q=Design%20a%20phased%20migration%20strategy%20for%20a%20legacy%20Python%20monolith%20to%20services.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 2 for 'Design a phased migration strategy for a legacy Python monolith to services. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Design a phased migration strategy for a legacy Python monolith to services. Qwen OpenRouter setup",
+                "url": "https://example.test/search/3?q=Design%20a%20phased%20migration%20strategy%20for%20a%20legacy%20Python%20monolith%20to%20services.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 3 for 'Design a phased migration strategy for a legacy Python monolith to services. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Design a phased migration strategy for a legacy Python monolith to services. Qwen OpenRouter setup",
+                "url": "https://example.test/search/4?q=Design%20a%20phased%20migration%20strategy%20for%20a%20legacy%20Python%20monolith%20to%20services.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 4 for 'Design a phased migration strategy for a legacy Python monolith to services. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Design a phased migration strategy for a legacy Python monolith to services. Qwen OpenRouter setup",
+                "url": "https://example.test/search/5?q=Design%20a%20phased%20migration%20strategy%20for%20a%20legacy%20Python%20monolith%20to%20services.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 5 for 'Design a phased migration strategy for a legacy Python monolith to services. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          },
+          {
+            "query": "Design a phased migration strategy for a legacy Python monolith to services. web search integration patterns",
+            "results": [
+              {
+                "title": "Mock result 1 for Design a phased migration strategy for a legacy Python monolith to services. web search integration patterns",
+                "url": "https://example.test/search/1?q=Design%20a%20phased%20migration%20strategy%20for%20a%20legacy%20Python%20monolith%20to%20services.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 1 for 'Design a phased migration strategy for a legacy Python monolith to services. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Design a phased migration strategy for a legacy Python monolith to services. web search integration patterns",
+                "url": "https://example.test/search/2?q=Design%20a%20phased%20migration%20strategy%20for%20a%20legacy%20Python%20monolith%20to%20services.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 2 for 'Design a phased migration strategy for a legacy Python monolith to services. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Design a phased migration strategy for a legacy Python monolith to services. web search integration patterns",
+                "url": "https://example.test/search/3?q=Design%20a%20phased%20migration%20strategy%20for%20a%20legacy%20Python%20monolith%20to%20services.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 3 for 'Design a phased migration strategy for a legacy Python monolith to services. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Design a phased migration strategy for a legacy Python monolith to services. web search integration patterns",
+                "url": "https://example.test/search/4?q=Design%20a%20phased%20migration%20strategy%20for%20a%20legacy%20Python%20monolith%20to%20services.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 4 for 'Design a phased migration strategy for a legacy Python monolith to services. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Design a phased migration strategy for a legacy Python monolith to services. web search integration patterns",
+                "url": "https://example.test/search/5?q=Design%20a%20phased%20migration%20strategy%20for%20a%20legacy%20Python%20monolith%20to%20services.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 5 for 'Design a phased migration strategy for a legacy Python monolith to services. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          }
+        ],
+        "events": [
+          {
+            "stage": "captain_plan",
+            "role": "captain",
+            "latency_ms": 1,
+            "token_count": 89,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "harper_search_plan",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 47,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 277,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 288,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 299,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_research",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 68,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "benjamin_reasoning",
+            "role": "benjamin",
+            "latency_ms": 1,
+            "token_count": 59,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "lucas_review",
+            "role": "lucas",
+            "latency_ms": 1,
+            "token_count": 60,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "lucas_critique",
+            "role": "lucas",
+            "latency_ms": 1,
+            "token_count": 16,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "captain_synthesis",
+            "role": "captain",
+            "latency_ms": 1,
+            "token_count": 87,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          }
+        ],
+        "metrics": {
+          "total_tokens": 1290.0,
+          "total_latency_ms": 10.0,
+          "critique_acceptance_rate": 1.0
+        }
+      }
+    },
+    {
+      "task_id": "eval_002",
+      "keyword_score": 1.0,
+      "role_distinctiveness": 0.9396969989075252,
+      "critique_acceptance_rate": 1.0,
+      "final_answer": "facts: Use a provider-backed Qwen runtime for generation and an explicit search tool for Harper instead of collapsing both concerns into one backend.\nlogic: Keep the first version sequential with strong structure, fallbacks, and tool call timeouts before optimizing latency.\nalternative: If you do not want a paid search API yet, start with DuckDuckGo as a best-effort fallback and move to Serper once reliability matters.\nfinal recommendation: build the captain-harper-benjamin-lucas-captain loop now, wire it to OpenRouter for Qwen, and treat search reliability as the first external dependency.",
+      "run_record": {
+        "run_id": "A1",
+        "task_id": "eval_002",
+        "seed": 314160,
+        "user_query": "Compare two database sharding approaches for high-write workloads.",
+        "captain_plan": "{\n  \"overall_strategy\": \"Split work into grounded research, independent reasoning, and a review pass before synthesis.\",\n  \"harper_task\": \"Search for recent, high-signal facts and implementation patterns that matter for the user query.\",\n  \"benjamin_task\": \"Stress-test the architecture, identify edge cases, and produce a defensible implementation path.\",\n  \"lucas_task\": \"Review Harper and Benjamin, identify gaps, add human-centered framing, and tighten the recommendation.\",\n  \"synthesis_checks\": [\n    \"Separate evidence from inference.\",\n    \"Call out missing infrastructure or API requirements.\",\n    \"Produce a practical first iteration, not an idealized design.\"\n  ],\n  \"deliverable_shape\": \"practical implementation guidance with explicit next steps\"\n}",
+        "role_outputs": {
+          "harper": "summary: Web research suggests using a hosted chat-completions backend and a separate search provider rather than trying to force both into one layer.\nevidence: [1] Hosted Qwen inference can sit behind a generic OpenAI-compatible API. [2] Search works best when query generation and result grounding are explicit steps.\nopen_questions: Confirm which search provider and API budget are acceptable.\nsource_notes: Prefer provider APIs over ad-hoc scraping when reliability matters.",
+          "benjamin": "logic: The lowest-risk first iteration is a sequential pipeline with captain planning, Harper search, Benjamin analysis, Lucas review, and captain synthesis.\nassumptions: External APIs may fail or rate-limit, so tool calls need fallbacks and timeouts.\nfailure_modes: search drift, citation loss, weak decomposition, and overlong prompts.\nchecks: enforce structured captain plans, cap search queries, and keep the backend interface provider-agnostic.",
+          "lucas": "critique: Harper adds evidence, but Benjamin should define the decision boundary more explicitly when evidence is thin.\nuser_impact: The answer should tell the user what keys they need and what still works without them.\ncommunication_advice: Lead with the working architecture, then list optional upgrades.\nrecommendation: Ship a robust brute-force version first and improve latency after the tooling loop is trustworthy."
+        },
+        "critiques": {
+          "lucas": {
+            "challenge_type": "missing_consideration",
+            "target": "search provider is underspecified",
+            "correction": "state required API keys and fallback behavior explicitly"
+          }
+        },
+        "final_answer": "facts: Use a provider-backed Qwen runtime for generation and an explicit search tool for Harper instead of collapsing both concerns into one backend.\nlogic: Keep the first version sequential with strong structure, fallbacks, and tool call timeouts before optimizing latency.\nalternative: If you do not want a paid search API yet, start with DuckDuckGo as a best-effort fallback and move to Serper once reliability matters.\nfinal recommendation: build the captain-harper-benjamin-lucas-captain loop now, wire it to OpenRouter for Qwen, and treat search reliability as the first external dependency.",
+        "search_traces": [
+          {
+            "query": "Compare two database sharding approaches for high-write workloads. architecture examples",
+            "results": [
+              {
+                "title": "Mock result 1 for Compare two database sharding approaches for high-write workloads. architecture examples",
+                "url": "https://example.test/search/1?q=Compare%20two%20database%20sharding%20approaches%20for%20high-write%20workloads.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 1 for 'Compare two database sharding approaches for high-write workloads. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Compare two database sharding approaches for high-write workloads. architecture examples",
+                "url": "https://example.test/search/2?q=Compare%20two%20database%20sharding%20approaches%20for%20high-write%20workloads.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 2 for 'Compare two database sharding approaches for high-write workloads. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Compare two database sharding approaches for high-write workloads. architecture examples",
+                "url": "https://example.test/search/3?q=Compare%20two%20database%20sharding%20approaches%20for%20high-write%20workloads.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 3 for 'Compare two database sharding approaches for high-write workloads. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Compare two database sharding approaches for high-write workloads. architecture examples",
+                "url": "https://example.test/search/4?q=Compare%20two%20database%20sharding%20approaches%20for%20high-write%20workloads.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 4 for 'Compare two database sharding approaches for high-write workloads. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Compare two database sharding approaches for high-write workloads. architecture examples",
+                "url": "https://example.test/search/5?q=Compare%20two%20database%20sharding%20approaches%20for%20high-write%20workloads.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 5 for 'Compare two database sharding approaches for high-write workloads. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          },
+          {
+            "query": "Compare two database sharding approaches for high-write workloads. Qwen OpenRouter setup",
+            "results": [
+              {
+                "title": "Mock result 1 for Compare two database sharding approaches for high-write workloads. Qwen OpenRouter setup",
+                "url": "https://example.test/search/1?q=Compare%20two%20database%20sharding%20approaches%20for%20high-write%20workloads.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 1 for 'Compare two database sharding approaches for high-write workloads. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Compare two database sharding approaches for high-write workloads. Qwen OpenRouter setup",
+                "url": "https://example.test/search/2?q=Compare%20two%20database%20sharding%20approaches%20for%20high-write%20workloads.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 2 for 'Compare two database sharding approaches for high-write workloads. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Compare two database sharding approaches for high-write workloads. Qwen OpenRouter setup",
+                "url": "https://example.test/search/3?q=Compare%20two%20database%20sharding%20approaches%20for%20high-write%20workloads.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 3 for 'Compare two database sharding approaches for high-write workloads. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Compare two database sharding approaches for high-write workloads. Qwen OpenRouter setup",
+                "url": "https://example.test/search/4?q=Compare%20two%20database%20sharding%20approaches%20for%20high-write%20workloads.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 4 for 'Compare two database sharding approaches for high-write workloads. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Compare two database sharding approaches for high-write workloads. Qwen OpenRouter setup",
+                "url": "https://example.test/search/5?q=Compare%20two%20database%20sharding%20approaches%20for%20high-write%20workloads.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 5 for 'Compare two database sharding approaches for high-write workloads. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          },
+          {
+            "query": "Compare two database sharding approaches for high-write workloads. web search integration patterns",
+            "results": [
+              {
+                "title": "Mock result 1 for Compare two database sharding approaches for high-write workloads. web search integration patterns",
+                "url": "https://example.test/search/1?q=Compare%20two%20database%20sharding%20approaches%20for%20high-write%20workloads.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 1 for 'Compare two database sharding approaches for high-write workloads. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Compare two database sharding approaches for high-write workloads. web search integration patterns",
+                "url": "https://example.test/search/2?q=Compare%20two%20database%20sharding%20approaches%20for%20high-write%20workloads.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 2 for 'Compare two database sharding approaches for high-write workloads. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Compare two database sharding approaches for high-write workloads. web search integration patterns",
+                "url": "https://example.test/search/3?q=Compare%20two%20database%20sharding%20approaches%20for%20high-write%20workloads.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 3 for 'Compare two database sharding approaches for high-write workloads. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Compare two database sharding approaches for high-write workloads. web search integration patterns",
+                "url": "https://example.test/search/4?q=Compare%20two%20database%20sharding%20approaches%20for%20high-write%20workloads.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 4 for 'Compare two database sharding approaches for high-write workloads. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Compare two database sharding approaches for high-write workloads. web search integration patterns",
+                "url": "https://example.test/search/5?q=Compare%20two%20database%20sharding%20approaches%20for%20high-write%20workloads.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 5 for 'Compare two database sharding approaches for high-write workloads. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          }
+        ],
+        "events": [
+          {
+            "stage": "captain_plan",
+            "role": "captain",
+            "latency_ms": 1,
+            "token_count": 89,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "harper_search_plan",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 35,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 233,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 244,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 255,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_research",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 68,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "benjamin_reasoning",
+            "role": "benjamin",
+            "latency_ms": 1,
+            "token_count": 59,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "lucas_review",
+            "role": "lucas",
+            "latency_ms": 1,
+            "token_count": 60,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "lucas_critique",
+            "role": "lucas",
+            "latency_ms": 1,
+            "token_count": 16,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "captain_synthesis",
+            "role": "captain",
+            "latency_ms": 1,
+            "token_count": 87,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          }
+        ],
+        "metrics": {
+          "total_tokens": 1146.0,
+          "total_latency_ms": 10.0,
+          "critique_acceptance_rate": 1.0
+        }
+      }
+    },
+    {
+      "task_id": "eval_003",
+      "keyword_score": 1.0,
+      "role_distinctiveness": 0.9396969989075252,
+      "critique_acceptance_rate": 1.0,
+      "final_answer": "facts: Use a provider-backed Qwen runtime for generation and an explicit search tool for Harper instead of collapsing both concerns into one backend.\nlogic: Keep the first version sequential with strong structure, fallbacks, and tool call timeouts before optimizing latency.\nalternative: If you do not want a paid search API yet, start with DuckDuckGo as a best-effort fallback and move to Serper once reliability matters.\nfinal recommendation: build the captain-harper-benjamin-lucas-captain loop now, wire it to OpenRouter for Qwen, and treat search reliability as the first external dependency.",
+      "run_record": {
+        "run_id": "A1",
+        "task_id": "eval_003",
+        "seed": 314161,
+        "user_query": "Explain why a recursive algorithm is slower than iterative for this case.",
+        "captain_plan": "{\n  \"overall_strategy\": \"Split work into grounded research, independent reasoning, and a review pass before synthesis.\",\n  \"harper_task\": \"Search for recent, high-signal facts and implementation patterns that matter for the user query.\",\n  \"benjamin_task\": \"Stress-test the architecture, identify edge cases, and produce a defensible implementation path.\",\n  \"lucas_task\": \"Review Harper and Benjamin, identify gaps, add human-centered framing, and tighten the recommendation.\",\n  \"synthesis_checks\": [\n    \"Separate evidence from inference.\",\n    \"Call out missing infrastructure or API requirements.\",\n    \"Produce a practical first iteration, not an idealized design.\"\n  ],\n  \"deliverable_shape\": \"practical implementation guidance with explicit next steps\"\n}",
+        "role_outputs": {
+          "harper": "summary: Web research suggests using a hosted chat-completions backend and a separate search provider rather than trying to force both into one layer.\nevidence: [1] Hosted Qwen inference can sit behind a generic OpenAI-compatible API. [2] Search works best when query generation and result grounding are explicit steps.\nopen_questions: Confirm which search provider and API budget are acceptable.\nsource_notes: Prefer provider APIs over ad-hoc scraping when reliability matters.",
+          "benjamin": "logic: The lowest-risk first iteration is a sequential pipeline with captain planning, Harper search, Benjamin analysis, Lucas review, and captain synthesis.\nassumptions: External APIs may fail or rate-limit, so tool calls need fallbacks and timeouts.\nfailure_modes: search drift, citation loss, weak decomposition, and overlong prompts.\nchecks: enforce structured captain plans, cap search queries, and keep the backend interface provider-agnostic.",
+          "lucas": "critique: Harper adds evidence, but Benjamin should define the decision boundary more explicitly when evidence is thin.\nuser_impact: The answer should tell the user what keys they need and what still works without them.\ncommunication_advice: Lead with the working architecture, then list optional upgrades.\nrecommendation: Ship a robust brute-force version first and improve latency after the tooling loop is trustworthy."
+        },
+        "critiques": {
+          "lucas": {
+            "challenge_type": "alternative_approach",
+            "target": "search provider is underspecified",
+            "correction": "state required API keys and fallback behavior explicitly"
+          }
+        },
+        "final_answer": "facts: Use a provider-backed Qwen runtime for generation and an explicit search tool for Harper instead of collapsing both concerns into one backend.\nlogic: Keep the first version sequential with strong structure, fallbacks, and tool call timeouts before optimizing latency.\nalternative: If you do not want a paid search API yet, start with DuckDuckGo as a best-effort fallback and move to Serper once reliability matters.\nfinal recommendation: build the captain-harper-benjamin-lucas-captain loop now, wire it to OpenRouter for Qwen, and treat search reliability as the first external dependency.",
+        "search_traces": [
+          {
+            "query": "Explain why a recursive algorithm is slower than iterative for this case. architecture examples",
+            "results": [
+              {
+                "title": "Mock result 1 for Explain why a recursive algorithm is slower than iterative for this case. architecture examples",
+                "url": "https://example.test/search/1?q=Explain%20why%20a%20recursive%20algorithm%20is%20slower%20than%20iterative%20for%20this%20case.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 1 for 'Explain why a recursive algorithm is slower than iterative for this case. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Explain why a recursive algorithm is slower than iterative for this case. architecture examples",
+                "url": "https://example.test/search/2?q=Explain%20why%20a%20recursive%20algorithm%20is%20slower%20than%20iterative%20for%20this%20case.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 2 for 'Explain why a recursive algorithm is slower than iterative for this case. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Explain why a recursive algorithm is slower than iterative for this case. architecture examples",
+                "url": "https://example.test/search/3?q=Explain%20why%20a%20recursive%20algorithm%20is%20slower%20than%20iterative%20for%20this%20case.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 3 for 'Explain why a recursive algorithm is slower than iterative for this case. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Explain why a recursive algorithm is slower than iterative for this case. architecture examples",
+                "url": "https://example.test/search/4?q=Explain%20why%20a%20recursive%20algorithm%20is%20slower%20than%20iterative%20for%20this%20case.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 4 for 'Explain why a recursive algorithm is slower than iterative for this case. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Explain why a recursive algorithm is slower than iterative for this case. architecture examples",
+                "url": "https://example.test/search/5?q=Explain%20why%20a%20recursive%20algorithm%20is%20slower%20than%20iterative%20for%20this%20case.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 5 for 'Explain why a recursive algorithm is slower than iterative for this case. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          },
+          {
+            "query": "Explain why a recursive algorithm is slower than iterative for this case. Qwen OpenRouter setup",
+            "results": [
+              {
+                "title": "Mock result 1 for Explain why a recursive algorithm is slower than iterative for this case. Qwen OpenRouter setup",
+                "url": "https://example.test/search/1?q=Explain%20why%20a%20recursive%20algorithm%20is%20slower%20than%20iterative%20for%20this%20case.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 1 for 'Explain why a recursive algorithm is slower than iterative for this case. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Explain why a recursive algorithm is slower than iterative for this case. Qwen OpenRouter setup",
+                "url": "https://example.test/search/2?q=Explain%20why%20a%20recursive%20algorithm%20is%20slower%20than%20iterative%20for%20this%20case.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 2 for 'Explain why a recursive algorithm is slower than iterative for this case. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Explain why a recursive algorithm is slower than iterative for this case. Qwen OpenRouter setup",
+                "url": "https://example.test/search/3?q=Explain%20why%20a%20recursive%20algorithm%20is%20slower%20than%20iterative%20for%20this%20case.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 3 for 'Explain why a recursive algorithm is slower than iterative for this case. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Explain why a recursive algorithm is slower than iterative for this case. Qwen OpenRouter setup",
+                "url": "https://example.test/search/4?q=Explain%20why%20a%20recursive%20algorithm%20is%20slower%20than%20iterative%20for%20this%20case.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 4 for 'Explain why a recursive algorithm is slower than iterative for this case. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Explain why a recursive algorithm is slower than iterative for this case. Qwen OpenRouter setup",
+                "url": "https://example.test/search/5?q=Explain%20why%20a%20recursive%20algorithm%20is%20slower%20than%20iterative%20for%20this%20case.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 5 for 'Explain why a recursive algorithm is slower than iterative for this case. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          },
+          {
+            "query": "Explain why a recursive algorithm is slower than iterative for this case. web search integration patterns",
+            "results": [
+              {
+                "title": "Mock result 1 for Explain why a recursive algorithm is slower than iterative for this case. web search integration patterns",
+                "url": "https://example.test/search/1?q=Explain%20why%20a%20recursive%20algorithm%20is%20slower%20than%20iterative%20for%20this%20case.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 1 for 'Explain why a recursive algorithm is slower than iterative for this case. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Explain why a recursive algorithm is slower than iterative for this case. web search integration patterns",
+                "url": "https://example.test/search/2?q=Explain%20why%20a%20recursive%20algorithm%20is%20slower%20than%20iterative%20for%20this%20case.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 2 for 'Explain why a recursive algorithm is slower than iterative for this case. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Explain why a recursive algorithm is slower than iterative for this case. web search integration patterns",
+                "url": "https://example.test/search/3?q=Explain%20why%20a%20recursive%20algorithm%20is%20slower%20than%20iterative%20for%20this%20case.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 3 for 'Explain why a recursive algorithm is slower than iterative for this case. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Explain why a recursive algorithm is slower than iterative for this case. web search integration patterns",
+                "url": "https://example.test/search/4?q=Explain%20why%20a%20recursive%20algorithm%20is%20slower%20than%20iterative%20for%20this%20case.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 4 for 'Explain why a recursive algorithm is slower than iterative for this case. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Explain why a recursive algorithm is slower than iterative for this case. web search integration patterns",
+                "url": "https://example.test/search/5?q=Explain%20why%20a%20recursive%20algorithm%20is%20slower%20than%20iterative%20for%20this%20case.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 5 for 'Explain why a recursive algorithm is slower than iterative for this case. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          }
+        ],
+        "events": [
+          {
+            "stage": "captain_plan",
+            "role": "captain",
+            "latency_ms": 1,
+            "token_count": 89,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "harper_search_plan",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 47,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 277,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 288,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 299,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_research",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 68,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "benjamin_reasoning",
+            "role": "benjamin",
+            "latency_ms": 1,
+            "token_count": 59,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "lucas_review",
+            "role": "lucas",
+            "latency_ms": 1,
+            "token_count": 60,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "lucas_critique",
+            "role": "lucas",
+            "latency_ms": 1,
+            "token_count": 16,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "captain_synthesis",
+            "role": "captain",
+            "latency_ms": 1,
+            "token_count": 87,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          }
+        ],
+        "metrics": {
+          "total_tokens": 1290.0,
+          "total_latency_ms": 10.0,
+          "critique_acceptance_rate": 1.0
+        }
+      }
+    },
+    {
+      "task_id": "eval_004",
+      "keyword_score": 1.0,
+      "role_distinctiveness": 0.9396969989075252,
+      "critique_acceptance_rate": 1.0,
+      "final_answer": "facts: Use a provider-backed Qwen runtime for generation and an explicit search tool for Harper instead of collapsing both concerns into one backend.\nlogic: Keep the first version sequential with strong structure, fallbacks, and tool call timeouts before optimizing latency.\nalternative: If you do not want a paid search API yet, start with DuckDuckGo as a best-effort fallback and move to Serper once reliability matters.\nfinal recommendation: build the captain-harper-benjamin-lucas-captain loop now, wire it to OpenRouter for Qwen, and treat search reliability as the first external dependency.",
+      "run_record": {
+        "run_id": "A1",
+        "task_id": "eval_004",
+        "seed": 314162,
+        "user_query": "Propose a user-friendly onboarding flow for a fintech mobile app.",
+        "captain_plan": "{\n  \"overall_strategy\": \"Split work into grounded research, independent reasoning, and a review pass before synthesis.\",\n  \"harper_task\": \"Search for recent, high-signal facts and implementation patterns that matter for the user query.\",\n  \"benjamin_task\": \"Stress-test the architecture, identify edge cases, and produce a defensible implementation path.\",\n  \"lucas_task\": \"Review Harper and Benjamin, identify gaps, add human-centered framing, and tighten the recommendation.\",\n  \"synthesis_checks\": [\n    \"Separate evidence from inference.\",\n    \"Call out missing infrastructure or API requirements.\",\n    \"Produce a practical first iteration, not an idealized design.\"\n  ],\n  \"deliverable_shape\": \"practical implementation guidance with explicit next steps\"\n}",
+        "role_outputs": {
+          "harper": "summary: Web research suggests using a hosted chat-completions backend and a separate search provider rather than trying to force both into one layer.\nevidence: [1] Hosted Qwen inference can sit behind a generic OpenAI-compatible API. [2] Search works best when query generation and result grounding are explicit steps.\nopen_questions: Confirm which search provider and API budget are acceptable.\nsource_notes: Prefer provider APIs over ad-hoc scraping when reliability matters.",
+          "benjamin": "logic: The lowest-risk first iteration is a sequential pipeline with captain planning, Harper search, Benjamin analysis, Lucas review, and captain synthesis.\nassumptions: External APIs may fail or rate-limit, so tool calls need fallbacks and timeouts.\nfailure_modes: search drift, citation loss, weak decomposition, and overlong prompts.\nchecks: enforce structured captain plans, cap search queries, and keep the backend interface provider-agnostic.",
+          "lucas": "critique: Harper adds evidence, but Benjamin should define the decision boundary more explicitly when evidence is thin.\nuser_impact: The answer should tell the user what keys they need and what still works without them.\ncommunication_advice: Lead with the working architecture, then list optional upgrades.\nrecommendation: Ship a robust brute-force version first and improve latency after the tooling loop is trustworthy."
+        },
+        "critiques": {
+          "lucas": {
+            "challenge_type": "factual",
+            "target": "search provider is underspecified",
+            "correction": "state required API keys and fallback behavior explicitly"
+          }
+        },
+        "final_answer": "facts: Use a provider-backed Qwen runtime for generation and an explicit search tool for Harper instead of collapsing both concerns into one backend.\nlogic: Keep the first version sequential with strong structure, fallbacks, and tool call timeouts before optimizing latency.\nalternative: If you do not want a paid search API yet, start with DuckDuckGo as a best-effort fallback and move to Serper once reliability matters.\nfinal recommendation: build the captain-harper-benjamin-lucas-captain loop now, wire it to OpenRouter for Qwen, and treat search reliability as the first external dependency.",
+        "search_traces": [
+          {
+            "query": "Propose a user-friendly onboarding flow for a fintech mobile app. architecture examples",
+            "results": [
+              {
+                "title": "Mock result 1 for Propose a user-friendly onboarding flow for a fintech mobile app. architecture examples",
+                "url": "https://example.test/search/1?q=Propose%20a%20user-friendly%20onboarding%20flow%20for%20a%20fintech%20mobile%20app.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 1 for 'Propose a user-friendly onboarding flow for a fintech mobile app. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Propose a user-friendly onboarding flow for a fintech mobile app. architecture examples",
+                "url": "https://example.test/search/2?q=Propose%20a%20user-friendly%20onboarding%20flow%20for%20a%20fintech%20mobile%20app.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 2 for 'Propose a user-friendly onboarding flow for a fintech mobile app. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Propose a user-friendly onboarding flow for a fintech mobile app. architecture examples",
+                "url": "https://example.test/search/3?q=Propose%20a%20user-friendly%20onboarding%20flow%20for%20a%20fintech%20mobile%20app.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 3 for 'Propose a user-friendly onboarding flow for a fintech mobile app. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Propose a user-friendly onboarding flow for a fintech mobile app. architecture examples",
+                "url": "https://example.test/search/4?q=Propose%20a%20user-friendly%20onboarding%20flow%20for%20a%20fintech%20mobile%20app.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 4 for 'Propose a user-friendly onboarding flow for a fintech mobile app. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Propose a user-friendly onboarding flow for a fintech mobile app. architecture examples",
+                "url": "https://example.test/search/5?q=Propose%20a%20user-friendly%20onboarding%20flow%20for%20a%20fintech%20mobile%20app.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 5 for 'Propose a user-friendly onboarding flow for a fintech mobile app. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          },
+          {
+            "query": "Propose a user-friendly onboarding flow for a fintech mobile app. Qwen OpenRouter setup",
+            "results": [
+              {
+                "title": "Mock result 1 for Propose a user-friendly onboarding flow for a fintech mobile app. Qwen OpenRouter setup",
+                "url": "https://example.test/search/1?q=Propose%20a%20user-friendly%20onboarding%20flow%20for%20a%20fintech%20mobile%20app.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 1 for 'Propose a user-friendly onboarding flow for a fintech mobile app. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Propose a user-friendly onboarding flow for a fintech mobile app. Qwen OpenRouter setup",
+                "url": "https://example.test/search/2?q=Propose%20a%20user-friendly%20onboarding%20flow%20for%20a%20fintech%20mobile%20app.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 2 for 'Propose a user-friendly onboarding flow for a fintech mobile app. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Propose a user-friendly onboarding flow for a fintech mobile app. Qwen OpenRouter setup",
+                "url": "https://example.test/search/3?q=Propose%20a%20user-friendly%20onboarding%20flow%20for%20a%20fintech%20mobile%20app.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 3 for 'Propose a user-friendly onboarding flow for a fintech mobile app. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Propose a user-friendly onboarding flow for a fintech mobile app. Qwen OpenRouter setup",
+                "url": "https://example.test/search/4?q=Propose%20a%20user-friendly%20onboarding%20flow%20for%20a%20fintech%20mobile%20app.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 4 for 'Propose a user-friendly onboarding flow for a fintech mobile app. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Propose a user-friendly onboarding flow for a fintech mobile app. Qwen OpenRouter setup",
+                "url": "https://example.test/search/5?q=Propose%20a%20user-friendly%20onboarding%20flow%20for%20a%20fintech%20mobile%20app.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 5 for 'Propose a user-friendly onboarding flow for a fintech mobile app. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          },
+          {
+            "query": "Propose a user-friendly onboarding flow for a fintech mobile app. web search integration patterns",
+            "results": [
+              {
+                "title": "Mock result 1 for Propose a user-friendly onboarding flow for a fintech mobile app. web search integration patterns",
+                "url": "https://example.test/search/1?q=Propose%20a%20user-friendly%20onboarding%20flow%20for%20a%20fintech%20mobile%20app.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 1 for 'Propose a user-friendly onboarding flow for a fintech mobile app. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Propose a user-friendly onboarding flow for a fintech mobile app. web search integration patterns",
+                "url": "https://example.test/search/2?q=Propose%20a%20user-friendly%20onboarding%20flow%20for%20a%20fintech%20mobile%20app.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 2 for 'Propose a user-friendly onboarding flow for a fintech mobile app. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Propose a user-friendly onboarding flow for a fintech mobile app. web search integration patterns",
+                "url": "https://example.test/search/3?q=Propose%20a%20user-friendly%20onboarding%20flow%20for%20a%20fintech%20mobile%20app.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 3 for 'Propose a user-friendly onboarding flow for a fintech mobile app. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Propose a user-friendly onboarding flow for a fintech mobile app. web search integration patterns",
+                "url": "https://example.test/search/4?q=Propose%20a%20user-friendly%20onboarding%20flow%20for%20a%20fintech%20mobile%20app.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 4 for 'Propose a user-friendly onboarding flow for a fintech mobile app. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Propose a user-friendly onboarding flow for a fintech mobile app. web search integration patterns",
+                "url": "https://example.test/search/5?q=Propose%20a%20user-friendly%20onboarding%20flow%20for%20a%20fintech%20mobile%20app.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 5 for 'Propose a user-friendly onboarding flow for a fintech mobile app. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          }
+        ],
+        "events": [
+          {
+            "stage": "captain_plan",
+            "role": "captain",
+            "latency_ms": 1,
+            "token_count": 89,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "harper_search_plan",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 41,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 255,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 266,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 277,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_research",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 68,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "benjamin_reasoning",
+            "role": "benjamin",
+            "latency_ms": 1,
+            "token_count": 59,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "lucas_review",
+            "role": "lucas",
+            "latency_ms": 1,
+            "token_count": 60,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "lucas_critique",
+            "role": "lucas",
+            "latency_ms": 1,
+            "token_count": 16,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "captain_synthesis",
+            "role": "captain",
+            "latency_ms": 1,
+            "token_count": 87,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          }
+        ],
+        "metrics": {
+          "total_tokens": 1218.0,
+          "total_latency_ms": 10.0,
+          "critique_acceptance_rate": 1.0
+        }
+      }
+    },
+    {
+      "task_id": "eval_005",
+      "keyword_score": 1.0,
+      "role_distinctiveness": 0.9396969989075252,
+      "critique_acceptance_rate": 1.0,
+      "final_answer": "facts: Use a provider-backed Qwen runtime for generation and an explicit search tool for Harper instead of collapsing both concerns into one backend.\nlogic: Keep the first version sequential with strong structure, fallbacks, and tool call timeouts before optimizing latency.\nalternative: If you do not want a paid search API yet, start with DuckDuckGo as a best-effort fallback and move to Serper once reliability matters.\nfinal recommendation: build the captain-harper-benjamin-lucas-captain loop now, wire it to OpenRouter for Qwen, and treat search reliability as the first external dependency.",
+      "run_record": {
+        "run_id": "A1",
+        "task_id": "eval_005",
+        "seed": 314163,
+        "user_query": "Audit this API design for backward compatibility risks.",
+        "captain_plan": "{\n  \"overall_strategy\": \"Split work into grounded research, independent reasoning, and a review pass before synthesis.\",\n  \"harper_task\": \"Search for recent, high-signal facts and implementation patterns that matter for the user query.\",\n  \"benjamin_task\": \"Stress-test the architecture, identify edge cases, and produce a defensible implementation path.\",\n  \"lucas_task\": \"Review Harper and Benjamin, identify gaps, add human-centered framing, and tighten the recommendation.\",\n  \"synthesis_checks\": [\n    \"Separate evidence from inference.\",\n    \"Call out missing infrastructure or API requirements.\",\n    \"Produce a practical first iteration, not an idealized design.\"\n  ],\n  \"deliverable_shape\": \"practical implementation guidance with explicit next steps\"\n}",
+        "role_outputs": {
+          "harper": "summary: Web research suggests using a hosted chat-completions backend and a separate search provider rather than trying to force both into one layer.\nevidence: [1] Hosted Qwen inference can sit behind a generic OpenAI-compatible API. [2] Search works best when query generation and result grounding are explicit steps.\nopen_questions: Confirm which search provider and API budget are acceptable.\nsource_notes: Prefer provider APIs over ad-hoc scraping when reliability matters.",
+          "benjamin": "logic: The lowest-risk first iteration is a sequential pipeline with captain planning, Harper search, Benjamin analysis, Lucas review, and captain synthesis.\nassumptions: External APIs may fail or rate-limit, so tool calls need fallbacks and timeouts.\nfailure_modes: search drift, citation loss, weak decomposition, and overlong prompts.\nchecks: enforce structured captain plans, cap search queries, and keep the backend interface provider-agnostic.",
+          "lucas": "critique: Harper adds evidence, but Benjamin should define the decision boundary more explicitly when evidence is thin.\nuser_impact: The answer should tell the user what keys they need and what still works without them.\ncommunication_advice: Lead with the working architecture, then list optional upgrades.\nrecommendation: Ship a robust brute-force version first and improve latency after the tooling loop is trustworthy."
+        },
+        "critiques": {
+          "lucas": {
+            "challenge_type": "alternative_approach",
+            "target": "search provider is underspecified",
+            "correction": "state required API keys and fallback behavior explicitly"
+          }
+        },
+        "final_answer": "facts: Use a provider-backed Qwen runtime for generation and an explicit search tool for Harper instead of collapsing both concerns into one backend.\nlogic: Keep the first version sequential with strong structure, fallbacks, and tool call timeouts before optimizing latency.\nalternative: If you do not want a paid search API yet, start with DuckDuckGo as a best-effort fallback and move to Serper once reliability matters.\nfinal recommendation: build the captain-harper-benjamin-lucas-captain loop now, wire it to OpenRouter for Qwen, and treat search reliability as the first external dependency.",
+        "search_traces": [
+          {
+            "query": "Audit this API design for backward compatibility risks. architecture examples",
+            "results": [
+              {
+                "title": "Mock result 1 for Audit this API design for backward compatibility risks. architecture examples",
+                "url": "https://example.test/search/1?q=Audit%20this%20API%20design%20for%20backward%20compatibility%20risks.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 1 for 'Audit this API design for backward compatibility risks. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Audit this API design for backward compatibility risks. architecture examples",
+                "url": "https://example.test/search/2?q=Audit%20this%20API%20design%20for%20backward%20compatibility%20risks.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 2 for 'Audit this API design for backward compatibility risks. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Audit this API design for backward compatibility risks. architecture examples",
+                "url": "https://example.test/search/3?q=Audit%20this%20API%20design%20for%20backward%20compatibility%20risks.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 3 for 'Audit this API design for backward compatibility risks. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Audit this API design for backward compatibility risks. architecture examples",
+                "url": "https://example.test/search/4?q=Audit%20this%20API%20design%20for%20backward%20compatibility%20risks.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 4 for 'Audit this API design for backward compatibility risks. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Audit this API design for backward compatibility risks. architecture examples",
+                "url": "https://example.test/search/5?q=Audit%20this%20API%20design%20for%20backward%20compatibility%20risks.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 5 for 'Audit this API design for backward compatibility risks. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          },
+          {
+            "query": "Audit this API design for backward compatibility risks. Qwen OpenRouter setup",
+            "results": [
+              {
+                "title": "Mock result 1 for Audit this API design for backward compatibility risks. Qwen OpenRouter setup",
+                "url": "https://example.test/search/1?q=Audit%20this%20API%20design%20for%20backward%20compatibility%20risks.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 1 for 'Audit this API design for backward compatibility risks. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Audit this API design for backward compatibility risks. Qwen OpenRouter setup",
+                "url": "https://example.test/search/2?q=Audit%20this%20API%20design%20for%20backward%20compatibility%20risks.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 2 for 'Audit this API design for backward compatibility risks. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Audit this API design for backward compatibility risks. Qwen OpenRouter setup",
+                "url": "https://example.test/search/3?q=Audit%20this%20API%20design%20for%20backward%20compatibility%20risks.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 3 for 'Audit this API design for backward compatibility risks. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Audit this API design for backward compatibility risks. Qwen OpenRouter setup",
+                "url": "https://example.test/search/4?q=Audit%20this%20API%20design%20for%20backward%20compatibility%20risks.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 4 for 'Audit this API design for backward compatibility risks. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Audit this API design for backward compatibility risks. Qwen OpenRouter setup",
+                "url": "https://example.test/search/5?q=Audit%20this%20API%20design%20for%20backward%20compatibility%20risks.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 5 for 'Audit this API design for backward compatibility risks. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          },
+          {
+            "query": "Audit this API design for backward compatibility risks. web search integration patterns",
+            "results": [
+              {
+                "title": "Mock result 1 for Audit this API design for backward compatibility risks. web search integration patterns",
+                "url": "https://example.test/search/1?q=Audit%20this%20API%20design%20for%20backward%20compatibility%20risks.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 1 for 'Audit this API design for backward compatibility risks. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Audit this API design for backward compatibility risks. web search integration patterns",
+                "url": "https://example.test/search/2?q=Audit%20this%20API%20design%20for%20backward%20compatibility%20risks.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 2 for 'Audit this API design for backward compatibility risks. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Audit this API design for backward compatibility risks. web search integration patterns",
+                "url": "https://example.test/search/3?q=Audit%20this%20API%20design%20for%20backward%20compatibility%20risks.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 3 for 'Audit this API design for backward compatibility risks. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Audit this API design for backward compatibility risks. web search integration patterns",
+                "url": "https://example.test/search/4?q=Audit%20this%20API%20design%20for%20backward%20compatibility%20risks.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 4 for 'Audit this API design for backward compatibility risks. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Audit this API design for backward compatibility risks. web search integration patterns",
+                "url": "https://example.test/search/5?q=Audit%20this%20API%20design%20for%20backward%20compatibility%20risks.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 5 for 'Audit this API design for backward compatibility risks. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          }
+        ],
+        "events": [
+          {
+            "stage": "captain_plan",
+            "role": "captain",
+            "latency_ms": 1,
+            "token_count": 89,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "harper_search_plan",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 35,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 233,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 244,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 255,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_research",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 68,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "benjamin_reasoning",
+            "role": "benjamin",
+            "latency_ms": 1,
+            "token_count": 59,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "lucas_review",
+            "role": "lucas",
+            "latency_ms": 1,
+            "token_count": 60,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "lucas_critique",
+            "role": "lucas",
+            "latency_ms": 1,
+            "token_count": 16,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "captain_synthesis",
+            "role": "captain",
+            "latency_ms": 1,
+            "token_count": 87,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          }
+        ],
+        "metrics": {
+          "total_tokens": 1146.0,
+          "total_latency_ms": 10.0,
+          "critique_acceptance_rate": 1.0
+        }
+      }
+    },
+    {
+      "task_id": "eval_006",
+      "keyword_score": 1.0,
+      "role_distinctiveness": 0.9396969989075252,
+      "critique_acceptance_rate": 1.0,
+      "final_answer": "facts: Use a provider-backed Qwen runtime for generation and an explicit search tool for Harper instead of collapsing both concerns into one backend.\nlogic: Keep the first version sequential with strong structure, fallbacks, and tool call timeouts before optimizing latency.\nalternative: If you do not want a paid search API yet, start with DuckDuckGo as a best-effort fallback and move to Serper once reliability matters.\nfinal recommendation: build the captain-harper-benjamin-lucas-captain loop now, wire it to OpenRouter for Qwen, and treat search reliability as the first external dependency.",
+      "run_record": {
+        "run_id": "A1",
+        "task_id": "eval_006",
+        "seed": 314164,
+        "user_query": "Break down a debugging plan for flaky CI tests.",
+        "captain_plan": "{\n  \"overall_strategy\": \"Split work into grounded research, independent reasoning, and a review pass before synthesis.\",\n  \"harper_task\": \"Search for recent, high-signal facts and implementation patterns that matter for the user query.\",\n  \"benjamin_task\": \"Stress-test the architecture, identify edge cases, and produce a defensible implementation path.\",\n  \"lucas_task\": \"Review Harper and Benjamin, identify gaps, add human-centered framing, and tighten the recommendation.\",\n  \"synthesis_checks\": [\n    \"Separate evidence from inference.\",\n    \"Call out missing infrastructure or API requirements.\",\n    \"Produce a practical first iteration, not an idealized design.\"\n  ],\n  \"deliverable_shape\": \"practical implementation guidance with explicit next steps\"\n}",
+        "role_outputs": {
+          "harper": "summary: Web research suggests using a hosted chat-completions backend and a separate search provider rather than trying to force both into one layer.\nevidence: [1] Hosted Qwen inference can sit behind a generic OpenAI-compatible API. [2] Search works best when query generation and result grounding are explicit steps.\nopen_questions: Confirm which search provider and API budget are acceptable.\nsource_notes: Prefer provider APIs over ad-hoc scraping when reliability matters.",
+          "benjamin": "logic: The lowest-risk first iteration is a sequential pipeline with captain planning, Harper search, Benjamin analysis, Lucas review, and captain synthesis.\nassumptions: External APIs may fail or rate-limit, so tool calls need fallbacks and timeouts.\nfailure_modes: search drift, citation loss, weak decomposition, and overlong prompts.\nchecks: enforce structured captain plans, cap search queries, and keep the backend interface provider-agnostic.",
+          "lucas": "critique: Harper adds evidence, but Benjamin should define the decision boundary more explicitly when evidence is thin.\nuser_impact: The answer should tell the user what keys they need and what still works without them.\ncommunication_advice: Lead with the working architecture, then list optional upgrades.\nrecommendation: Ship a robust brute-force version first and improve latency after the tooling loop is trustworthy."
+        },
+        "critiques": {
+          "lucas": {
+            "challenge_type": "logical",
+            "target": "search provider is underspecified",
+            "correction": "state required API keys and fallback behavior explicitly"
+          }
+        },
+        "final_answer": "facts: Use a provider-backed Qwen runtime for generation and an explicit search tool for Harper instead of collapsing both concerns into one backend.\nlogic: Keep the first version sequential with strong structure, fallbacks, and tool call timeouts before optimizing latency.\nalternative: If you do not want a paid search API yet, start with DuckDuckGo as a best-effort fallback and move to Serper once reliability matters.\nfinal recommendation: build the captain-harper-benjamin-lucas-captain loop now, wire it to OpenRouter for Qwen, and treat search reliability as the first external dependency.",
+        "search_traces": [
+          {
+            "query": "Break down a debugging plan for flaky CI tests. architecture examples",
+            "results": [
+              {
+                "title": "Mock result 1 for Break down a debugging plan for flaky CI tests. architecture examples",
+                "url": "https://example.test/search/1?q=Break%20down%20a%20debugging%20plan%20for%20flaky%20CI%20tests.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 1 for 'Break down a debugging plan for flaky CI tests. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Break down a debugging plan for flaky CI tests. architecture examples",
+                "url": "https://example.test/search/2?q=Break%20down%20a%20debugging%20plan%20for%20flaky%20CI%20tests.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 2 for 'Break down a debugging plan for flaky CI tests. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Break down a debugging plan for flaky CI tests. architecture examples",
+                "url": "https://example.test/search/3?q=Break%20down%20a%20debugging%20plan%20for%20flaky%20CI%20tests.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 3 for 'Break down a debugging plan for flaky CI tests. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Break down a debugging plan for flaky CI tests. architecture examples",
+                "url": "https://example.test/search/4?q=Break%20down%20a%20debugging%20plan%20for%20flaky%20CI%20tests.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 4 for 'Break down a debugging plan for flaky CI tests. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Break down a debugging plan for flaky CI tests. architecture examples",
+                "url": "https://example.test/search/5?q=Break%20down%20a%20debugging%20plan%20for%20flaky%20CI%20tests.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 5 for 'Break down a debugging plan for flaky CI tests. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          },
+          {
+            "query": "Break down a debugging plan for flaky CI tests. Qwen OpenRouter setup",
+            "results": [
+              {
+                "title": "Mock result 1 for Break down a debugging plan for flaky CI tests. Qwen OpenRouter setup",
+                "url": "https://example.test/search/1?q=Break%20down%20a%20debugging%20plan%20for%20flaky%20CI%20tests.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 1 for 'Break down a debugging plan for flaky CI tests. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Break down a debugging plan for flaky CI tests. Qwen OpenRouter setup",
+                "url": "https://example.test/search/2?q=Break%20down%20a%20debugging%20plan%20for%20flaky%20CI%20tests.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 2 for 'Break down a debugging plan for flaky CI tests. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Break down a debugging plan for flaky CI tests. Qwen OpenRouter setup",
+                "url": "https://example.test/search/3?q=Break%20down%20a%20debugging%20plan%20for%20flaky%20CI%20tests.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 3 for 'Break down a debugging plan for flaky CI tests. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Break down a debugging plan for flaky CI tests. Qwen OpenRouter setup",
+                "url": "https://example.test/search/4?q=Break%20down%20a%20debugging%20plan%20for%20flaky%20CI%20tests.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 4 for 'Break down a debugging plan for flaky CI tests. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Break down a debugging plan for flaky CI tests. Qwen OpenRouter setup",
+                "url": "https://example.test/search/5?q=Break%20down%20a%20debugging%20plan%20for%20flaky%20CI%20tests.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 5 for 'Break down a debugging plan for flaky CI tests. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          },
+          {
+            "query": "Break down a debugging plan for flaky CI tests. web search integration patterns",
+            "results": [
+              {
+                "title": "Mock result 1 for Break down a debugging plan for flaky CI tests. web search integration patterns",
+                "url": "https://example.test/search/1?q=Break%20down%20a%20debugging%20plan%20for%20flaky%20CI%20tests.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 1 for 'Break down a debugging plan for flaky CI tests. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Break down a debugging plan for flaky CI tests. web search integration patterns",
+                "url": "https://example.test/search/2?q=Break%20down%20a%20debugging%20plan%20for%20flaky%20CI%20tests.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 2 for 'Break down a debugging plan for flaky CI tests. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Break down a debugging plan for flaky CI tests. web search integration patterns",
+                "url": "https://example.test/search/3?q=Break%20down%20a%20debugging%20plan%20for%20flaky%20CI%20tests.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 3 for 'Break down a debugging plan for flaky CI tests. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Break down a debugging plan for flaky CI tests. web search integration patterns",
+                "url": "https://example.test/search/4?q=Break%20down%20a%20debugging%20plan%20for%20flaky%20CI%20tests.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 4 for 'Break down a debugging plan for flaky CI tests. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Break down a debugging plan for flaky CI tests. web search integration patterns",
+                "url": "https://example.test/search/5?q=Break%20down%20a%20debugging%20plan%20for%20flaky%20CI%20tests.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 5 for 'Break down a debugging plan for flaky CI tests. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          }
+        ],
+        "events": [
+          {
+            "stage": "captain_plan",
+            "role": "captain",
+            "latency_ms": 1,
+            "token_count": 89,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "harper_search_plan",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 38,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 244,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 255,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 266,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_research",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 68,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "benjamin_reasoning",
+            "role": "benjamin",
+            "latency_ms": 1,
+            "token_count": 59,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "lucas_review",
+            "role": "lucas",
+            "latency_ms": 1,
+            "token_count": 60,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "lucas_critique",
+            "role": "lucas",
+            "latency_ms": 1,
+            "token_count": 16,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "captain_synthesis",
+            "role": "captain",
+            "latency_ms": 1,
+            "token_count": 87,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          }
+        ],
+        "metrics": {
+          "total_tokens": 1182.0,
+          "total_latency_ms": 10.0,
+          "critique_acceptance_rate": 1.0
+        }
+      }
+    },
+    {
+      "task_id": "eval_007",
+      "keyword_score": 1.0,
+      "role_distinctiveness": 0.9396969989075252,
+      "critique_acceptance_rate": 1.0,
+      "final_answer": "facts: Use a provider-backed Qwen runtime for generation and an explicit search tool for Harper instead of collapsing both concerns into one backend.\nlogic: Keep the first version sequential with strong structure, fallbacks, and tool call timeouts before optimizing latency.\nalternative: If you do not want a paid search API yet, start with DuckDuckGo as a best-effort fallback and move to Serper once reliability matters.\nfinal recommendation: build the captain-harper-benjamin-lucas-captain loop now, wire it to OpenRouter for Qwen, and treat search reliability as the first external dependency.",
+      "run_record": {
+        "run_id": "A1",
+        "task_id": "eval_007",
+        "seed": 314165,
+        "user_query": "Create a balanced plan for model evaluation under strict latency.",
+        "captain_plan": "{\n  \"overall_strategy\": \"Split work into grounded research, independent reasoning, and a review pass before synthesis.\",\n  \"harper_task\": \"Search for recent, high-signal facts and implementation patterns that matter for the user query.\",\n  \"benjamin_task\": \"Stress-test the architecture, identify edge cases, and produce a defensible implementation path.\",\n  \"lucas_task\": \"Review Harper and Benjamin, identify gaps, add human-centered framing, and tighten the recommendation.\",\n  \"synthesis_checks\": [\n    \"Separate evidence from inference.\",\n    \"Call out missing infrastructure or API requirements.\",\n    \"Produce a practical first iteration, not an idealized design.\"\n  ],\n  \"deliverable_shape\": \"practical implementation guidance with explicit next steps\"\n}",
+        "role_outputs": {
+          "harper": "summary: Web research suggests using a hosted chat-completions backend and a separate search provider rather than trying to force both into one layer.\nevidence: [1] Hosted Qwen inference can sit behind a generic OpenAI-compatible API. [2] Search works best when query generation and result grounding are explicit steps.\nopen_questions: Confirm which search provider and API budget are acceptable.\nsource_notes: Prefer provider APIs over ad-hoc scraping when reliability matters.",
+          "benjamin": "logic: The lowest-risk first iteration is a sequential pipeline with captain planning, Harper search, Benjamin analysis, Lucas review, and captain synthesis.\nassumptions: External APIs may fail or rate-limit, so tool calls need fallbacks and timeouts.\nfailure_modes: search drift, citation loss, weak decomposition, and overlong prompts.\nchecks: enforce structured captain plans, cap search queries, and keep the backend interface provider-agnostic.",
+          "lucas": "critique: Harper adds evidence, but Benjamin should define the decision boundary more explicitly when evidence is thin.\nuser_impact: The answer should tell the user what keys they need and what still works without them.\ncommunication_advice: Lead with the working architecture, then list optional upgrades.\nrecommendation: Ship a robust brute-force version first and improve latency after the tooling loop is trustworthy."
+        },
+        "critiques": {
+          "lucas": {
+            "challenge_type": "missing_consideration",
+            "target": "search provider is underspecified",
+            "correction": "state required API keys and fallback behavior explicitly"
+          }
+        },
+        "final_answer": "facts: Use a provider-backed Qwen runtime for generation and an explicit search tool for Harper instead of collapsing both concerns into one backend.\nlogic: Keep the first version sequential with strong structure, fallbacks, and tool call timeouts before optimizing latency.\nalternative: If you do not want a paid search API yet, start with DuckDuckGo as a best-effort fallback and move to Serper once reliability matters.\nfinal recommendation: build the captain-harper-benjamin-lucas-captain loop now, wire it to OpenRouter for Qwen, and treat search reliability as the first external dependency.",
+        "search_traces": [
+          {
+            "query": "Create a balanced plan for model evaluation under strict latency. architecture examples",
+            "results": [
+              {
+                "title": "Mock result 1 for Create a balanced plan for model evaluation under strict latency. architecture examples",
+                "url": "https://example.test/search/1?q=Create%20a%20balanced%20plan%20for%20model%20evaluation%20under%20strict%20latency.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 1 for 'Create a balanced plan for model evaluation under strict latency. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Create a balanced plan for model evaluation under strict latency. architecture examples",
+                "url": "https://example.test/search/2?q=Create%20a%20balanced%20plan%20for%20model%20evaluation%20under%20strict%20latency.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 2 for 'Create a balanced plan for model evaluation under strict latency. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Create a balanced plan for model evaluation under strict latency. architecture examples",
+                "url": "https://example.test/search/3?q=Create%20a%20balanced%20plan%20for%20model%20evaluation%20under%20strict%20latency.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 3 for 'Create a balanced plan for model evaluation under strict latency. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Create a balanced plan for model evaluation under strict latency. architecture examples",
+                "url": "https://example.test/search/4?q=Create%20a%20balanced%20plan%20for%20model%20evaluation%20under%20strict%20latency.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 4 for 'Create a balanced plan for model evaluation under strict latency. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Create a balanced plan for model evaluation under strict latency. architecture examples",
+                "url": "https://example.test/search/5?q=Create%20a%20balanced%20plan%20for%20model%20evaluation%20under%20strict%20latency.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 5 for 'Create a balanced plan for model evaluation under strict latency. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          },
+          {
+            "query": "Create a balanced plan for model evaluation under strict latency. Qwen OpenRouter setup",
+            "results": [
+              {
+                "title": "Mock result 1 for Create a balanced plan for model evaluation under strict latency. Qwen OpenRouter setup",
+                "url": "https://example.test/search/1?q=Create%20a%20balanced%20plan%20for%20model%20evaluation%20under%20strict%20latency.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 1 for 'Create a balanced plan for model evaluation under strict latency. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Create a balanced plan for model evaluation under strict latency. Qwen OpenRouter setup",
+                "url": "https://example.test/search/2?q=Create%20a%20balanced%20plan%20for%20model%20evaluation%20under%20strict%20latency.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 2 for 'Create a balanced plan for model evaluation under strict latency. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Create a balanced plan for model evaluation under strict latency. Qwen OpenRouter setup",
+                "url": "https://example.test/search/3?q=Create%20a%20balanced%20plan%20for%20model%20evaluation%20under%20strict%20latency.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 3 for 'Create a balanced plan for model evaluation under strict latency. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Create a balanced plan for model evaluation under strict latency. Qwen OpenRouter setup",
+                "url": "https://example.test/search/4?q=Create%20a%20balanced%20plan%20for%20model%20evaluation%20under%20strict%20latency.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 4 for 'Create a balanced plan for model evaluation under strict latency. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Create a balanced plan for model evaluation under strict latency. Qwen OpenRouter setup",
+                "url": "https://example.test/search/5?q=Create%20a%20balanced%20plan%20for%20model%20evaluation%20under%20strict%20latency.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 5 for 'Create a balanced plan for model evaluation under strict latency. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          },
+          {
+            "query": "Create a balanced plan for model evaluation under strict latency. web search integration patterns",
+            "results": [
+              {
+                "title": "Mock result 1 for Create a balanced plan for model evaluation under strict latency. web search integration patterns",
+                "url": "https://example.test/search/1?q=Create%20a%20balanced%20plan%20for%20model%20evaluation%20under%20strict%20latency.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 1 for 'Create a balanced plan for model evaluation under strict latency. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Create a balanced plan for model evaluation under strict latency. web search integration patterns",
+                "url": "https://example.test/search/2?q=Create%20a%20balanced%20plan%20for%20model%20evaluation%20under%20strict%20latency.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 2 for 'Create a balanced plan for model evaluation under strict latency. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Create a balanced plan for model evaluation under strict latency. web search integration patterns",
+                "url": "https://example.test/search/3?q=Create%20a%20balanced%20plan%20for%20model%20evaluation%20under%20strict%20latency.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 3 for 'Create a balanced plan for model evaluation under strict latency. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Create a balanced plan for model evaluation under strict latency. web search integration patterns",
+                "url": "https://example.test/search/4?q=Create%20a%20balanced%20plan%20for%20model%20evaluation%20under%20strict%20latency.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 4 for 'Create a balanced plan for model evaluation under strict latency. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Create a balanced plan for model evaluation under strict latency. web search integration patterns",
+                "url": "https://example.test/search/5?q=Create%20a%20balanced%20plan%20for%20model%20evaluation%20under%20strict%20latency.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 5 for 'Create a balanced plan for model evaluation under strict latency. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          }
+        ],
+        "events": [
+          {
+            "stage": "captain_plan",
+            "role": "captain",
+            "latency_ms": 1,
+            "token_count": 89,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "harper_search_plan",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 41,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 255,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 266,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 277,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_research",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 68,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "benjamin_reasoning",
+            "role": "benjamin",
+            "latency_ms": 1,
+            "token_count": 59,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "lucas_review",
+            "role": "lucas",
+            "latency_ms": 1,
+            "token_count": 60,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "lucas_critique",
+            "role": "lucas",
+            "latency_ms": 1,
+            "token_count": 16,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "captain_synthesis",
+            "role": "captain",
+            "latency_ms": 1,
+            "token_count": 87,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          }
+        ],
+        "metrics": {
+          "total_tokens": 1218.0,
+          "total_latency_ms": 10.0,
+          "critique_acceptance_rate": 1.0
+        }
+      }
+    },
+    {
+      "task_id": "eval_008",
+      "keyword_score": 1.0,
+      "role_distinctiveness": 0.9396969989075252,
+      "critique_acceptance_rate": 1.0,
+      "final_answer": "facts: Use a provider-backed Qwen runtime for generation and an explicit search tool for Harper instead of collapsing both concerns into one backend.\nlogic: Keep the first version sequential with strong structure, fallbacks, and tool call timeouts before optimizing latency.\nalternative: If you do not want a paid search API yet, start with DuckDuckGo as a best-effort fallback and move to Serper once reliability matters.\nfinal recommendation: build the captain-harper-benjamin-lucas-captain loop now, wire it to OpenRouter for Qwen, and treat search reliability as the first external dependency.",
+      "run_record": {
+        "run_id": "A1",
+        "task_id": "eval_008",
+        "seed": 314166,
+        "user_query": "Draft a strategy to reduce hallucinations in a retrieval assistant.",
+        "captain_plan": "{\n  \"overall_strategy\": \"Split work into grounded research, independent reasoning, and a review pass before synthesis.\",\n  \"harper_task\": \"Search for recent, high-signal facts and implementation patterns that matter for the user query.\",\n  \"benjamin_task\": \"Stress-test the architecture, identify edge cases, and produce a defensible implementation path.\",\n  \"lucas_task\": \"Review Harper and Benjamin, identify gaps, add human-centered framing, and tighten the recommendation.\",\n  \"synthesis_checks\": [\n    \"Separate evidence from inference.\",\n    \"Call out missing infrastructure or API requirements.\",\n    \"Produce a practical first iteration, not an idealized design.\"\n  ],\n  \"deliverable_shape\": \"practical implementation guidance with explicit next steps\"\n}",
+        "role_outputs": {
+          "harper": "summary: Web research suggests using a hosted chat-completions backend and a separate search provider rather than trying to force both into one layer.\nevidence: [1] Hosted Qwen inference can sit behind a generic OpenAI-compatible API. [2] Search works best when query generation and result grounding are explicit steps.\nopen_questions: Confirm which search provider and API budget are acceptable.\nsource_notes: Prefer provider APIs over ad-hoc scraping when reliability matters.",
+          "benjamin": "logic: The lowest-risk first iteration is a sequential pipeline with captain planning, Harper search, Benjamin analysis, Lucas review, and captain synthesis.\nassumptions: External APIs may fail or rate-limit, so tool calls need fallbacks and timeouts.\nfailure_modes: search drift, citation loss, weak decomposition, and overlong prompts.\nchecks: enforce structured captain plans, cap search queries, and keep the backend interface provider-agnostic.",
+          "lucas": "critique: Harper adds evidence, but Benjamin should define the decision boundary more explicitly when evidence is thin.\nuser_impact: The answer should tell the user what keys they need and what still works without them.\ncommunication_advice: Lead with the working architecture, then list optional upgrades.\nrecommendation: Ship a robust brute-force version first and improve latency after the tooling loop is trustworthy."
+        },
+        "critiques": {
+          "lucas": {
+            "challenge_type": "alternative_approach",
+            "target": "search provider is underspecified",
+            "correction": "state required API keys and fallback behavior explicitly"
+          }
+        },
+        "final_answer": "facts: Use a provider-backed Qwen runtime for generation and an explicit search tool for Harper instead of collapsing both concerns into one backend.\nlogic: Keep the first version sequential with strong structure, fallbacks, and tool call timeouts before optimizing latency.\nalternative: If you do not want a paid search API yet, start with DuckDuckGo as a best-effort fallback and move to Serper once reliability matters.\nfinal recommendation: build the captain-harper-benjamin-lucas-captain loop now, wire it to OpenRouter for Qwen, and treat search reliability as the first external dependency.",
+        "search_traces": [
+          {
+            "query": "Draft a strategy to reduce hallucinations in a retrieval assistant. architecture examples",
+            "results": [
+              {
+                "title": "Mock result 1 for Draft a strategy to reduce hallucinations in a retrieval assistant. architecture examples",
+                "url": "https://example.test/search/1?q=Draft%20a%20strategy%20to%20reduce%20hallucinations%20in%20a%20retrieval%20assistant.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 1 for 'Draft a strategy to reduce hallucinations in a retrieval assistant. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Draft a strategy to reduce hallucinations in a retrieval assistant. architecture examples",
+                "url": "https://example.test/search/2?q=Draft%20a%20strategy%20to%20reduce%20hallucinations%20in%20a%20retrieval%20assistant.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 2 for 'Draft a strategy to reduce hallucinations in a retrieval assistant. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Draft a strategy to reduce hallucinations in a retrieval assistant. architecture examples",
+                "url": "https://example.test/search/3?q=Draft%20a%20strategy%20to%20reduce%20hallucinations%20in%20a%20retrieval%20assistant.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 3 for 'Draft a strategy to reduce hallucinations in a retrieval assistant. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Draft a strategy to reduce hallucinations in a retrieval assistant. architecture examples",
+                "url": "https://example.test/search/4?q=Draft%20a%20strategy%20to%20reduce%20hallucinations%20in%20a%20retrieval%20assistant.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 4 for 'Draft a strategy to reduce hallucinations in a retrieval assistant. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Draft a strategy to reduce hallucinations in a retrieval assistant. architecture examples",
+                "url": "https://example.test/search/5?q=Draft%20a%20strategy%20to%20reduce%20hallucinations%20in%20a%20retrieval%20assistant.%20architecture%20examples",
+                "snippet": "Synthetic evidence item 5 for 'Draft a strategy to reduce hallucinations in a retrieval assistant. architecture examples'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          },
+          {
+            "query": "Draft a strategy to reduce hallucinations in a retrieval assistant. Qwen OpenRouter setup",
+            "results": [
+              {
+                "title": "Mock result 1 for Draft a strategy to reduce hallucinations in a retrieval assistant. Qwen OpenRouter setup",
+                "url": "https://example.test/search/1?q=Draft%20a%20strategy%20to%20reduce%20hallucinations%20in%20a%20retrieval%20assistant.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 1 for 'Draft a strategy to reduce hallucinations in a retrieval assistant. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Draft a strategy to reduce hallucinations in a retrieval assistant. Qwen OpenRouter setup",
+                "url": "https://example.test/search/2?q=Draft%20a%20strategy%20to%20reduce%20hallucinations%20in%20a%20retrieval%20assistant.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 2 for 'Draft a strategy to reduce hallucinations in a retrieval assistant. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Draft a strategy to reduce hallucinations in a retrieval assistant. Qwen OpenRouter setup",
+                "url": "https://example.test/search/3?q=Draft%20a%20strategy%20to%20reduce%20hallucinations%20in%20a%20retrieval%20assistant.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 3 for 'Draft a strategy to reduce hallucinations in a retrieval assistant. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Draft a strategy to reduce hallucinations in a retrieval assistant. Qwen OpenRouter setup",
+                "url": "https://example.test/search/4?q=Draft%20a%20strategy%20to%20reduce%20hallucinations%20in%20a%20retrieval%20assistant.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 4 for 'Draft a strategy to reduce hallucinations in a retrieval assistant. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Draft a strategy to reduce hallucinations in a retrieval assistant. Qwen OpenRouter setup",
+                "url": "https://example.test/search/5?q=Draft%20a%20strategy%20to%20reduce%20hallucinations%20in%20a%20retrieval%20assistant.%20Qwen%20OpenRouter%20setup",
+                "snippet": "Synthetic evidence item 5 for 'Draft a strategy to reduce hallucinations in a retrieval assistant. Qwen OpenRouter setup'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          },
+          {
+            "query": "Draft a strategy to reduce hallucinations in a retrieval assistant. web search integration patterns",
+            "results": [
+              {
+                "title": "Mock result 1 for Draft a strategy to reduce hallucinations in a retrieval assistant. web search integration patterns",
+                "url": "https://example.test/search/1?q=Draft%20a%20strategy%20to%20reduce%20hallucinations%20in%20a%20retrieval%20assistant.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 1 for 'Draft a strategy to reduce hallucinations in a retrieval assistant. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 2 for Draft a strategy to reduce hallucinations in a retrieval assistant. web search integration patterns",
+                "url": "https://example.test/search/2?q=Draft%20a%20strategy%20to%20reduce%20hallucinations%20in%20a%20retrieval%20assistant.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 2 for 'Draft a strategy to reduce hallucinations in a retrieval assistant. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 3 for Draft a strategy to reduce hallucinations in a retrieval assistant. web search integration patterns",
+                "url": "https://example.test/search/3?q=Draft%20a%20strategy%20to%20reduce%20hallucinations%20in%20a%20retrieval%20assistant.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 3 for 'Draft a strategy to reduce hallucinations in a retrieval assistant. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 4 for Draft a strategy to reduce hallucinations in a retrieval assistant. web search integration patterns",
+                "url": "https://example.test/search/4?q=Draft%20a%20strategy%20to%20reduce%20hallucinations%20in%20a%20retrieval%20assistant.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 4 for 'Draft a strategy to reduce hallucinations in a retrieval assistant. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              },
+              {
+                "title": "Mock result 5 for Draft a strategy to reduce hallucinations in a retrieval assistant. web search integration patterns",
+                "url": "https://example.test/search/5?q=Draft%20a%20strategy%20to%20reduce%20hallucinations%20in%20a%20retrieval%20assistant.%20web%20search%20integration%20patterns",
+                "snippet": "Synthetic evidence item 5 for 'Draft a strategy to reduce hallucinations in a retrieval assistant. web search integration patterns'. Use this only for integration testing.",
+                "source": "mock"
+              }
+            ],
+            "error": null
+          }
+        ],
+        "events": [
+          {
+            "stage": "captain_plan",
+            "role": "captain",
+            "latency_ms": 1,
+            "token_count": 89,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "harper_search_plan",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 41,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 255,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 266,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_search",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 277,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "harper_research",
+            "role": "harper",
+            "latency_ms": 1,
+            "token_count": 68,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "benjamin_reasoning",
+            "role": "benjamin",
+            "latency_ms": 1,
+            "token_count": 59,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "lucas_review",
+            "role": "lucas",
+            "latency_ms": 1,
+            "token_count": 60,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          },
+          {
+            "stage": "lucas_critique",
+            "role": "lucas",
+            "latency_ms": 1,
+            "token_count": 16,
+            "retries": 0,
+            "accepted": true,
+            "errors": []
+          },
+          {
+            "stage": "captain_synthesis",
+            "role": "captain",
+            "latency_ms": 1,
+            "token_count": 87,
+            "retries": 0,
+            "accepted": null,
+            "errors": null
+          }
+        ],
+        "metrics": {
+          "total_tokens": 1218.0,
+          "total_latency_ms": 10.0,
+          "critique_acceptance_rate": 1.0
+        }
+      }
+    }
+  ],
+  "runtime": {
+    "backend_provider": "mock",
+    "model": "qwen/qwen3-14b",
+    "search_provider": "mock"
+  }
+}

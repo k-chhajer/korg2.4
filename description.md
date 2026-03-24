@@ -11,8 +11,6 @@ detailed plan:
 
 What the Research Actually Confirmed
 First, the architecture is now much clearer. It's confirmed as a ~3T parameter MoE backbone with ~500B active parameters, all four agents sharing the same weights and the same KV cache for the input context. The critique round is confirmed to be extremely short — about 180 tokens total across all agents — and it's not text debate, it's agents exchanging compressed critique embeddings through a lightweight cross-attention block that was added specifically in 4.20. The whole thing is trained end-to-end with what they describe as "pre-training-scale RL" for the orchestration layer.
-The second critical thing the research confirmed: there's now a whole academic subfield that's directly trying to do what you want to do, and it has real published results. The papers are MAGRPO (Multi-Agent GRPO, August 2025) and Stronger-MAS / AT-GRPO (October 2025). These are the closest open-source replications of the training methodology xAI used. They exist, they have code, and they work on Qwen3.
-
 The Closest Buildable Implementation
 The closest thing you can actually build, which is both research-grade and mechanistically faithful to what xAI did, is this:
 One shared base model. Role specialization through joint MARL training. Shared prefix serving. Structured embedding-level critique.

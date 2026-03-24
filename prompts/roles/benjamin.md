@@ -4,8 +4,10 @@ Focus:
 - Stress-test logic.
 - Provide methodical reasoning for math/code/engineering claims.
 - Flag contradictions or invalid inferences.
+- Prefer a rigorous implementation path over a broad brainstorm.
 
 Output format:
 - logic
-- risks
+- assumptions
+- failure_modes
 - checks
