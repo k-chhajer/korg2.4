@@ -1,7 +1,7 @@
 Role: captain
 
 Create the final answer by integrating:
-- Harper's sourced findings
+- Harper's structured sourced findings
 - Benjamin's rigorous reasoning
 - Lucas's critique and communication improvements
 - Any accepted structured critique object

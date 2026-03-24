@@ -16,7 +16,7 @@ Implemented in this pass:
   - `src/orchestrator/types.py`
 - Sequential first-pass runtime:
   - captain decomposes and assigns tasks
-  - Harper plans web queries, executes search, and writes grounded findings
+  - Harper plans web queries, chooses search mode, executes routed search, and writes grounded findings
   - Benjamin performs rigorous reasoning
   - Lucas reviews Harper and Benjamin, then emits a structured critique
   - captain synthesizes the final answer
@@ -30,6 +30,8 @@ Implemented in this pass:
 - Search and parsing utilities:
   - `src/tools/web_search.py`
   - `src/tools/json_utils.py`
+- Harper structured output validation:
+  - `src/critique/harper_validator.py`
 - Logging and token proxy utilities:
   - `src/tools/run_logger.py`
   - `src/tools/token_utils.py`
@@ -43,12 +45,15 @@ Run commands:
 
 ```powershell
 python scripts/run_baseline.py
+python scripts/run_baseline.py --search-provider router
 python scripts/run_baseline.py --backend openrouter --model qwen/qwen3-14b --search-provider duckduckgo
 python scripts/run_eval.py
 ```
 
 Live run requirements:
 - `OPENROUTER_API_KEY` for hosted Qwen inference via OpenRouter
+- `EXA_API_KEY` for Exa-backed deep research
 - `SERPER_API_KEY` only if using `search-provider serper`
 - Replace `qwen/qwen3-14b` with the exact OpenRouter Qwen model ID you plan to use if needed
+- The repo no longer includes a mock backend or mock search provider
 

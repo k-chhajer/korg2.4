@@ -1,6 +1,6 @@
 {
   "backend": {
-    "provider": "mock",
+    "provider": "openrouter",
     "model": "qwen/qwen3-14b",
     "base_url": "https://openrouter.ai/api/v1/chat/completions",
     "timeout_seconds": 60,
@@ -8,10 +8,35 @@
     "app_name": "grok_multiagent"
   },
   "search": {
-    "provider": "mock",
+    "provider": "router",
+    "default_mode": "fast_lookup",
     "max_queries": 3,
     "max_results": 5,
-    "timeout_seconds": 20
+    "user_location": "US",
+    "language": "en",
+    "routing": {
+      "fast_lookup": "serper",
+      "standard_research": "exa",
+      "deep_research": "exa",
+      "default": "serper",
+      "fallback": "duckduckgo"
+    },
+    "serper": {
+      "timeout_seconds": 20
+    },
+    "exa": {
+      "timeout_seconds": 30,
+      "fetch_contents_on_fast": false,
+      "fetch_contents_on_standard": true,
+      "fetch_contents_on_deep": true,
+      "include_text": true,
+      "include_summary": false,
+      "highlight_num_sentences": 2,
+      "highlights_per_url": 2
+    },
+    "duckduckgo": {
+      "timeout_seconds": 20
+    }
   },
   "generation": {
     "default_temperature": 0.2,

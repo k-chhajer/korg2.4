@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +12,7 @@ class ProtocolConfig:
     roles: list[str]
     turn_order: list[str]
     max_tokens: dict[str, int]
+    harper: dict[str, Any]
     critique: dict[str, Any]
     retry: dict[str, int]
     seed_policy: dict[str, int]
@@ -24,6 +25,7 @@ class ProtocolConfig:
             roles=payload["roles"],
             turn_order=payload["turn_order"],
             max_tokens=payload["max_tokens"],
+            harper=payload.get("harper", {}),
             critique=payload["critique"],
             retry=payload["retry"],
             seed_policy=payload["seed_policy"],
@@ -89,13 +91,35 @@ class SearchResult:
     url: str
     snippet: str
     source: str
+    source_id: int | None = None
+    domain: str = ""
+    published_at: str | None = None
+    source_type: str = "web"
+    provider: str = ""
+    summary: str = ""
+    text: str = ""
+    highlights: list[str] = field(default_factory=list)
 
 
 @dataclass
 class SearchTrace:
     query: str
+    mode: str
+    provider: str
     results: list[SearchResult]
     error: str | None = None
+
+
+@dataclass
+class SearchRequest:
+    query: str
+    mode: str
+    max_results: int
+    category: str | None = None
+    include_domains: list[str] = field(default_factory=list)
+    exclude_domains: list[str] = field(default_factory=list)
+    user_location: str | None = None
+    language: str | None = None
 
 
 @dataclass
