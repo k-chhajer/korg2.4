@@ -1,0 +1,40 @@
+{
+  "name": "qwen3_8b_committee_v1",
+  "provider": {
+    "api_base": "http://localhost:8000/v1",
+    "api_key_env": "OPENAI_API_KEY",
+    "timeout_sec": 180
+  },
+  "defaults": {
+    "model": "Qwen/Qwen3-8B-Instruct",
+    "temperature": 0.3,
+    "max_tokens": 1400
+  },
+  "roles": {
+    "coordinator_plan": {
+      "system_prompt_path": "../prompts/coordinator_plan.md",
+      "temperature": 0.1,
+      "max_tokens": 1200
+    },
+    "researcher": {
+      "system_prompt_path": "../prompts/researcher.md",
+      "temperature": 0.4,
+      "max_tokens": 1600
+    },
+    "analyst": {
+      "system_prompt_path": "../prompts/analyst.md",
+      "temperature": 0.2,
+      "max_tokens": 1400
+    },
+    "critic": {
+      "system_prompt_path": "../prompts/critic.md",
+      "temperature": 0.2,
+      "max_tokens": 1200
+    },
+    "coordinator_finalize": {
+      "system_prompt_path": "../prompts/coordinator_finalize.md",
+      "temperature": 0.1,
+      "max_tokens": 1400
+    }
+  }
+}
