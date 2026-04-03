@@ -26,6 +26,9 @@ class BenchmarkReportTests(unittest.TestCase):
                         "config_name": "qwen3_8b_committee_eval",
                         "config_path": str(ROOT / "implementation" / "configs" / "qwen3_8b_committee_eval.json"),
                         "task_count": 2,
+                        "paper_claim_blockers": [
+                            "Role specialization source is not set to post_trained_role_specialists, so this config should be treated as a prompt scaffold."
+                        ],
                         "systems": {
                             "committee": {
                                 "completed_count": 2,
@@ -34,7 +37,9 @@ class BenchmarkReportTests(unittest.TestCase):
                                 "aggregate": {
                                     "mean_run_elapsed_sec": 2.5,
                                     "tasks_per_sec": 0.4,
+                                    "model_call_count": 10,
                                     "usage": {"total_tokens": 200},
+                                    "behavior_metrics": {"decomposition_rate": 1.0},
                                     "reference_metrics": {
                                         "overall": {"answer_em": 0.5, "answer_f1": 0.75},
                                         "by_benchmark": {
@@ -47,14 +52,16 @@ class BenchmarkReportTests(unittest.TestCase):
                                 },
                                 "failures": [{"task_id": "task-3", "error": "backend timeout"}],
                             },
-                            "single_direct": {
+                            "single_shot": {
                                 "completed_count": 2,
                                 "failed_count": 0,
                                 "wall_clock_elapsed_sec": 3.0,
                                 "aggregate": {
                                     "mean_run_elapsed_sec": 1.5,
                                     "tasks_per_sec": 0.6666667,
+                                    "model_call_count": 2,
                                     "usage": {"total_tokens": 80},
+                                    "behavior_metrics": {},
                                     "reference_metrics": {
                                         "overall": {"answer_em": 0.0, "answer_f1": 0.25},
                                         "by_benchmark": {
@@ -69,7 +76,7 @@ class BenchmarkReportTests(unittest.TestCase):
                             },
                         },
                         "comparison": {
-                            "committee_vs_single_direct": {
+                            "committee_vs_single_shot": {
                                 "latency_ratio": 1.6666667,
                                 "token_ratio": 2.5,
                                 "metric_deltas": {"answer_em": 0.5, "answer_f1": 0.5},
@@ -86,11 +93,13 @@ class BenchmarkReportTests(unittest.TestCase):
             self.assertEqual(exit_code, 0)
             report = output_path.read_text(encoding="utf-8")
             self.assertIn("# Benchmark Results", report)
-            self.assertIn("| System | Completed | Failed | Wall Clock (s) | Mean Run (s) | Tasks/s | Total Tokens |", report)
-            self.assertIn("| committee | 2 | 1 | 5 | 2.5 | 0.4 | 200 |", report)
-            self.assertIn("| single_direct | 2 | 0 | 3 | 1.5 | 0.6667 | 80 |", report)
+            self.assertIn("Paper-claim blockers:", report)
+            self.assertIn("| System | Completed | Failed | Wall Clock (s) | Mean Run (s) | Tasks/s | Total Tokens | Model Calls |", report)
+            self.assertIn("| committee | 2 | 1 | 5 | 2.5 | 0.4 | 200 | 10 |", report)
+            self.assertIn("| single_shot | 2 | 0 | 3 | 1.5 | 0.6667 | 80 | 2 |", report)
             self.assertIn("| System | answer_em | answer_f1 |", report)
             self.assertIn("| System | Benchmark | Count | answer_em | answer_f1 |", report)
+            self.assertIn("| System | decomposition_rate |", report)
             self.assertIn("| Comparison | Latency Ratio | Token Ratio | answer_em Delta | answer_f1 Delta |", report)
             self.assertIn("| committee | task-3 | backend timeout |", report)
         finally:

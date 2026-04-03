@@ -88,6 +88,15 @@ def _comparison_metric_names(summary: dict[str, Any]) -> list[str]:
     return sorted(names)
 
 
+def _behavior_metric_names(summary: dict[str, Any]) -> list[str]:
+    names: set[str] = set()
+    for _, system_payload in _iter_systems(summary):
+        metrics = system_payload.get("aggregate", {}).get("behavior_metrics", {})
+        if isinstance(metrics, dict):
+            names.update(str(name) for name in metrics)
+    return sorted(names)
+
+
 def render_markdown(summary: dict[str, Any], summary_path: Path) -> str:
     generated_at_utc = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
     lines = [
@@ -99,9 +108,22 @@ def render_markdown(summary: dict[str, Any], summary_path: Path) -> str:
         f"- Config path: `{summary.get('config_path', 'N/A')}`",
         f"- Task count: `{_format_number(summary.get('task_count'))}`",
         "",
-        "## System Overview",
+        "## Verification",
         "",
     ]
+
+    blockers = summary.get("paper_claim_blockers", [])
+    if isinstance(blockers, list) and blockers:
+        lines.extend(["Paper-claim blockers:", ""])
+        lines.extend([f"- {str(blocker)}" for blocker in blockers if str(blocker).strip()])
+        lines.append("")
+    else:
+        lines.extend(["No paper-claim blockers were recorded in this summary.", ""])
+
+    lines.extend([
+        "## System Overview",
+        "",
+    ])
 
     overview_rows: list[list[Any]] = []
     for system_name, system_payload in _iter_systems(summary):
@@ -116,6 +138,7 @@ def render_markdown(summary: dict[str, Any], summary_path: Path) -> str:
                 aggregate.get("mean_run_elapsed_sec") if isinstance(aggregate, dict) else None,
                 aggregate.get("tasks_per_sec") if isinstance(aggregate, dict) else None,
                 usage.get("total_tokens") if isinstance(usage, dict) else None,
+                aggregate.get("model_call_count") if isinstance(aggregate, dict) else None,
             ]
         )
 
@@ -131,6 +154,7 @@ def render_markdown(summary: dict[str, Any], summary_path: Path) -> str:
                         "Mean Run (s)",
                         "Tasks/s",
                         "Total Tokens",
+                        "Model Calls",
                     ],
                     overview_rows,
                 ),
@@ -146,7 +170,9 @@ def render_markdown(summary: dict[str, Any], summary_path: Path) -> str:
         overall_rows: list[list[Any]] = []
         for system_name, system_payload in _iter_systems(summary):
             metrics = system_payload.get("aggregate", {}).get("reference_metrics", {}).get("overall", {})
-            overall_rows.append([system_name, *[metrics.get(name) if isinstance(metrics, dict) else None for name in overall_metric_names]])
+            overall_rows.append(
+                [system_name, *[metrics.get(name) if isinstance(metrics, dict) else None for name in overall_metric_names]]
+            )
         lines.extend([_make_table(["System", *overall_metric_names], overall_rows), ""])
     else:
         lines.extend(["_No completed benchmark metrics were recorded in this summary._", ""])
@@ -180,6 +206,17 @@ def render_markdown(summary: dict[str, Any], summary_path: Path) -> str:
         )
     else:
         lines.extend(["_No per-benchmark metrics were recorded in this summary._", ""])
+
+    behavior_metric_names = _behavior_metric_names(summary)
+    lines.extend(["## Behavior Metrics", ""])
+    if behavior_metric_names:
+        behavior_rows: list[list[Any]] = []
+        for system_name, system_payload in _iter_systems(summary):
+            metrics = system_payload.get("aggregate", {}).get("behavior_metrics", {})
+            behavior_rows.append([system_name, *[metrics.get(name) if isinstance(metrics, dict) else None for name in behavior_metric_names]])
+        lines.extend([_make_table(["System", *behavior_metric_names], behavior_rows), ""])
+    else:
+        lines.extend(["_No behavior metrics were recorded in this summary._", ""])
 
     comparison_metric_names = _comparison_metric_names(summary)
     comparison = summary.get("comparison", {})

@@ -166,6 +166,41 @@ def _extract_choice_label(answer: str, choices: list[dict[str, str]]) -> str | N
     return None
 
 
+def _supporting_fact_metrics(task: TaskSpec, answer: str) -> dict[str, float]:
+    supporting_facts = task.metadata.get("supporting_facts", [])
+    if not isinstance(supporting_facts, list) or not supporting_facts:
+        return {}
+
+    context = task.context or ""
+    normalized_context = normalize_answer(context)
+    normalized_answer = normalize_answer(answer)
+
+    titles: list[str] = []
+    for item in supporting_facts:
+        if isinstance(item, list) and item and isinstance(item[0], str):
+            titles.append(item[0])
+
+    if not titles:
+        return {}
+
+    title_hits = 0
+    context_hits = 0
+    for title in titles:
+        normalized_title = normalize_answer(title)
+        if normalized_title and normalized_title in normalized_answer:
+            title_hits += 1
+        if normalized_title and normalized_title in normalized_context:
+            context_hits += 1
+
+    precision = title_hits / len(titles)
+    recall = title_hits / len(titles)
+    return {
+        "supporting_fact_title_recall": recall,
+        "supporting_fact_title_precision": precision,
+        "supporting_fact_context_coverage": context_hits / len(titles),
+    }
+
+
 def evaluate_answer(task: TaskSpec, answer: str) -> dict[str, Any]:
     checks = task.checks
     normalized_answer = answer.lower()
@@ -224,6 +259,7 @@ def evaluate_answer(task: TaskSpec, answer: str) -> dict[str, Any]:
         scored_answer = str(best_match["scored_answer"])
         reference_metrics["answer_em"] = float(best_match["answer_em"])
         reference_metrics["answer_f1"] = float(best_match["answer_f1"])
+        reference_metrics.update(_supporting_fact_metrics(task, answer))
 
     if task.correct_choice and task.choices:
         predicted_choice = _extract_choice_label(answer, task.choices)

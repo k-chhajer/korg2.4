@@ -8,12 +8,24 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from committee_llm.baselines import SingleShotRunner
+from committee_llm.baselines import (
+    SingleModelMultiTurnRunner,
+    SingleModelStructuredRunner,
+    SingleShotRunner,
+)
 from committee_llm.client import OpenAICompatibleChatClient
 from committee_llm.config import ExperimentConfig
 from committee_llm.metrics import aggregate_usage, merge_numeric_dicts
 from committee_llm.orchestrator import CommitteeRunner
 from committee_llm.tasks import TaskSpec
+
+
+SYSTEM_ORDER = (
+    "single_shot",
+    "single_multiturn",
+    "single_structured",
+    "committee",
+)
 
 
 def _load_tasks(tasks_path: str | Path, limit: int | None = None) -> list[TaskSpec]:
@@ -67,23 +79,38 @@ def _aggregate_reference_metrics(traces: list[dict[str, Any]]) -> dict[str, Any]
             metric_sums[name] = metric_sums.get(name, 0.0) + float(value)
             metric_counts[name] = metric_counts.get(name, 0) + 1
 
-    overall = {
-        name: overall_sums[name] / overall_counts[name]
-        for name in sorted(overall_sums)
-        if overall_counts[name]
+    return {
+        "overall": {
+            name: overall_sums[name] / overall_counts[name]
+            for name in sorted(overall_sums)
+            if overall_counts[name]
+        },
+        "by_benchmark": {
+            benchmark_name: {
+                "count": bucket["count"],
+                "metrics": {
+                    name: bucket["metric_sums"][name] / bucket["metric_counts"][name]
+                    for name in sorted(bucket["metric_sums"])
+                    if bucket["metric_counts"][name]
+                },
+            }
+            for benchmark_name, bucket in sorted(by_benchmark.items())
+        },
     }
-    benchmark_summary = {}
-    for benchmark_name, bucket in by_benchmark.items():
-        benchmark_summary[benchmark_name] = {
-            "count": bucket["count"],
-            "metrics": {
-                name: bucket["metric_sums"][name] / bucket["metric_counts"][name]
-                for name in sorted(bucket["metric_sums"])
-                if bucket["metric_counts"][name]
-            },
-        }
 
-    return {"overall": overall, "by_benchmark": benchmark_summary}
+
+def _aggregate_behavior_metrics(traces: list[dict[str, Any]]) -> dict[str, float]:
+    sums: dict[str, float] = {}
+    counts: dict[str, int] = {}
+    for trace in traces:
+        metrics = trace.get("summary", {}).get("behavior_metrics", {})
+        if not isinstance(metrics, dict):
+            continue
+        for name, value in metrics.items():
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                sums[name] = sums.get(name, 0.0) + float(value)
+                counts[name] = counts.get(name, 0) + 1
+    return {name: sums[name] / counts[name] for name in sorted(sums) if counts[name]}
 
 
 def _build_system_summary(
@@ -96,19 +123,21 @@ def _build_system_summary(
 ) -> dict[str, Any]:
     usage_by_role: dict[str, dict[str, Any]] = {}
     total_run_elapsed_sec = 0.0
+    total_model_calls = 0
+    traces = [item["trace"] for item in completed_runs]
 
-    for item in completed_runs:
-        trace = item["trace"]
+    for trace in traces:
         total_run_elapsed_sec += float(trace["total_elapsed_sec"])
+        total_model_calls += int(trace.get("summary", {}).get("model_call_count", 0))
         per_role_usage = trace.get("summary", {}).get("per_role_usage", {})
         if isinstance(per_role_usage, dict):
             for role_name, usage in per_role_usage.items():
                 bucket = usage_by_role.setdefault(role_name, {})
                 merge_numeric_dicts(bucket, usage if isinstance(usage, dict) else {})
 
-    traces = [item["trace"] for item in completed_runs]
     aggregate_usage_totals = aggregate_usage([trace.get("summary", {}).get("usage") for trace in traces])
     reference_metrics = _aggregate_reference_metrics(traces)
+    behavior_metrics = _aggregate_behavior_metrics(traces)
 
     return {
         "system": system_name,
@@ -123,14 +152,19 @@ def _build_system_summary(
             "tasks_per_sec": len(completed_runs) / wall_clock_elapsed_sec if wall_clock_elapsed_sec > 0 else None,
             "usage": aggregate_usage_totals,
             "per_role_usage": usage_by_role,
+            "model_call_count": total_model_calls,
+            "mean_model_call_count": total_model_calls / len(completed_runs) if completed_runs else None,
             "reference_metrics": reference_metrics,
+            "behavior_metrics": behavior_metrics,
         },
         "runs": [
             {
                 "task_id": item["task_id"],
                 "output_path": str(item["output_path"]),
                 "total_elapsed_sec": item["trace"]["total_elapsed_sec"],
+                "model_call_count": item["trace"].get("summary", {}).get("model_call_count"),
                 "reference_metrics": item["trace"].get("evaluation", {}).get("reference", {}).get("metrics", {}),
+                "behavior_metrics": item["trace"].get("summary", {}).get("behavior_metrics", {}),
             }
             for item in completed_runs
         ],
@@ -139,19 +173,29 @@ def _build_system_summary(
 
 
 def _build_comparison(system_summaries: dict[str, dict[str, Any]]) -> dict[str, Any]:
-    if "committee" not in system_summaries or "single_direct" not in system_summaries:
-        return {}
+    comparisons: dict[str, Any] = {}
+    committee = system_summaries.get("committee")
+    if not committee:
+        return comparisons
 
-    committee = system_summaries["committee"]
-    baseline = system_summaries["single_direct"]
+    for baseline_name in ("single_shot", "single_multiturn", "single_structured"):
+        baseline = system_summaries.get(baseline_name)
+        if not baseline:
+            continue
 
-    def _ratio(a: float | None, b: float | None) -> float | None:
-        if a is None or b in (None, 0):
-            return None
-        return a / b
+        def _ratio(a: float | None, b: float | None) -> float | None:
+            if a is None or b in (None, 0):
+                return None
+            return a / b
 
-    comparison = {
-        "committee_vs_single_direct": {
+        committee_metrics = committee["aggregate"]["reference_metrics"]["overall"]
+        baseline_metrics = baseline["aggregate"]["reference_metrics"]["overall"]
+        metric_deltas = {
+            metric: float(committee_metrics[metric]) - float(baseline_metrics[metric])
+            for metric in sorted(set(committee_metrics) & set(baseline_metrics))
+        }
+
+        comparisons[f"committee_vs_{baseline_name}"] = {
             "latency_ratio": _ratio(
                 committee["aggregate"]["mean_run_elapsed_sec"],
                 baseline["aggregate"]["mean_run_elapsed_sec"],
@@ -160,31 +204,28 @@ def _build_comparison(system_summaries: dict[str, dict[str, Any]]) -> dict[str, 
                 committee["aggregate"]["usage"].get("total_tokens"),
                 baseline["aggregate"]["usage"].get("total_tokens"),
             ),
-            "metric_deltas": {},
+            "model_call_ratio": _ratio(
+                committee["aggregate"].get("mean_model_call_count"),
+                baseline["aggregate"].get("mean_model_call_count"),
+            ),
+            "metric_deltas": metric_deltas,
         }
-    }
 
-    committee_metrics = committee["aggregate"]["reference_metrics"]["overall"]
-    baseline_metrics = baseline["aggregate"]["reference_metrics"]["overall"]
-    common_metrics = sorted(set(committee_metrics) & set(baseline_metrics))
-    for metric in common_metrics:
-        comparison["committee_vs_single_direct"]["metric_deltas"][metric] = (
-            float(committee_metrics[metric]) - float(baseline_metrics[metric])
-        )
-
-    return comparison
+    return comparisons
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run research benchmarks and compare committee vs baseline systems.")
+    parser = argparse.ArgumentParser(description="Run focused Architecture 1 benchmarks and matched baselines.")
     parser.add_argument("--config", required=True, help="Path to an experiment config JSON file.")
     parser.add_argument("--tasks", required=True, help="Path to converted benchmark task JSONL.")
     parser.add_argument("--outdir", default="runs/benchmark", help="Output directory for benchmark traces.")
-    parser.add_argument("--system", choices=["committee", "single_direct", "both"], default="both")
+    parser.add_argument(
+        "--system",
+        choices=[*SYSTEM_ORDER, "all"],
+        default="all",
+    )
     parser.add_argument("--limit", type=int, help="Optional max number of tasks to run.")
     parser.add_argument("--continue-on-error", action="store_true")
-    parser.add_argument("--single-temperature", type=float, help="Optional override for the single baseline temperature.")
-    parser.add_argument("--single-max-tokens", type=int, help="Optional override for the single baseline max tokens.")
     return parser
 
 
@@ -199,15 +240,16 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     systems: dict[str, Any] = {}
-    if args.system in {"committee", "both"}:
-        systems["committee"] = CommitteeRunner(config=config, client=client)
-    if args.system in {"single_direct", "both"}:
-        systems["single_direct"] = SingleShotRunner(
-            config=config,
-            client=client,
-            temperature=args.single_temperature,
-            max_tokens=args.single_max_tokens,
-        )
+    selected = SYSTEM_ORDER if args.system == "all" else (args.system,)
+    for system_name in selected:
+        if system_name == "committee":
+            systems[system_name] = CommitteeRunner(config=config, client=client)
+        elif system_name == "single_shot":
+            systems[system_name] = SingleShotRunner(config=config, client=client)
+        elif system_name == "single_multiturn":
+            systems[system_name] = SingleModelMultiTurnRunner(config=config, client=client)
+        elif system_name == "single_structured":
+            systems[system_name] = SingleModelStructuredRunner(config=config, client=client)
 
     outdir = Path(args.outdir)
     system_summaries: dict[str, dict[str, Any]] = {}
@@ -249,6 +291,7 @@ def main(argv: list[str] | None = None) -> int:
         "config_name": config.name,
         "config_path": str(config.source_path),
         "task_count": len(tasks),
+        "paper_claim_blockers": config.paper_claim_blockers(),
         "systems": system_summaries,
         "comparison": _build_comparison(system_summaries),
     }

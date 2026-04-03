@@ -99,6 +99,7 @@ class CommitteeRunnerSummaryTests(unittest.TestCase):
         self.assertEqual(trace["run_id"], "task-123")
         self.assertEqual(trace["final_answer"], "Final output")
         self.assertEqual(trace["summary"]["stage_count"], 5)
+        self.assertEqual(trace["summary"]["model_call_count"], 5)
         self.assertEqual(trace["summary"]["usage"]["prompt_tokens"], 60)
         self.assertEqual(trace["summary"]["usage"]["completion_tokens"], 110)
         self.assertEqual(trace["summary"]["usage"]["total_tokens"], 170)
@@ -107,6 +108,8 @@ class CommitteeRunnerSummaryTests(unittest.TestCase):
             12,
         )
         self.assertAlmostEqual(trace["summary"]["per_role_elapsed_sec"]["critic"], 1.1)
+        self.assertEqual(trace["architecture_spec"]["family"], "architecture_1")
+        self.assertIn("prompt scaffold", trace["architecture_spec"]["paper_claim_blockers"][0].lower())
 
     def test_run_task_includes_structured_task_and_evaluation(self) -> None:
         config = ExperimentConfig.load(ROOT / "implementation" / "configs" / "qwen3_8b_committee.json")
@@ -177,6 +180,8 @@ class CommitteeRunnerSummaryTests(unittest.TestCase):
         first_prompt = str(trace["steps"][0]["user_prompt"])
         self.assertIn("<task_context>", first_prompt)
         self.assertIn("<evaluation_criteria>", first_prompt)
+        self.assertEqual(trace["steps"][0]["role_specialization"], "coordinator")
+        self.assertIn("Problem Restatement", trace["steps"][0]["schema_validation"]["present_headers"])
 
 
 if __name__ == "__main__":

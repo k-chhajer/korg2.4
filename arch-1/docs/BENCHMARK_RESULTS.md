@@ -1,35 +1,23 @@
 # Benchmark Results
 
-- Summary source: `C:\Users\luthi\Documents\korg\arch-1\evals\runs\hotpotqa_qwen8b\summary.json`
-- Generated at (UTC): `2026-03-31T16:49:15+00:00`
-- Config: `qwen3_8b_committee_eval`
-- Config path: `C:\Users\luthi\Documents\korg\arch-1\implementation\configs\qwen3_8b_committee_eval.json`
-- Task count: `1`
+No paper-valid Architecture 1 benchmark results are checked in yet.
 
-## System Overview
+Current state:
 
-| System | Completed | Failed | Wall Clock (s) | Mean Run (s) | Tasks/s | Total Tokens |
-| --- | --- | --- | --- | --- | --- | --- |
-| committee | 0 | 1 | 4.1317 | N/A | 0 | N/A |
-| single_direct | 0 | 1 | 4.0429 | N/A | 0 | N/A |
+- the benchmark harness is implemented
+- the four required comparison systems are implemented
+- HotpotQA conversion is implemented
+- supporting-fact proxy metrics are implemented
+- behavior metrics are logged
+- report generation is implemented
 
-## Overall Metrics
+Current boundary:
 
-_No completed benchmark metrics were recorded in this summary._
+- checked-in Qwen3 configs are prompt scaffolds for local verification
+- paper-grade Architecture 1 numbers should only be reported from a config whose `paper_claim_blockers` list is empty
 
-## Per-Benchmark Metrics
+When runs are generated, render them from:
 
-_No per-benchmark metrics were recorded in this summary._
+- [committee_llm/benchmark_report.py](C:/Users/luthi/Documents/korg/korg2_4_remote/arch-1/implementation/committee_llm/benchmark_report.py)
 
-## Comparison
-
-| Comparison | Latency Ratio | Token Ratio |
-| --- | --- | --- |
-| committee_vs_single_direct | N/A | N/A |
-
-## Failures
-
-| System | Task ID | Error |
-| --- | --- | --- |
-| committee | 5a8b57f25542995d1e6f1371 | Could not reach chat backend at http://localhost:8000/v1/chat/completions: [WinError 10061] No connection could be made because the target machine actively refused it |
-| single_direct | 5a8b57f25542995d1e6f1371 | Could not reach chat backend at http://localhost:8000/v1/chat/completions: [WinError 10061] No connection could be made because the target machine actively refused it |
+into this file.

@@ -29,7 +29,7 @@ class FakeCommitteeRunner:
         benchmark_name = getattr(task, "benchmark_name", None) or "hotpotqa_distractor"
         return {
             "run_id": task_id,
-            "architecture": "committee_v1_explicit_coordination",
+            "architecture": "architecture_1_posttrained_committee",
             "config_name": "fake-config",
             "config_path": "fake-config-path",
             "started_at_utc": "2026-03-30T00:00:00+00:00",
@@ -52,13 +52,15 @@ class FakeCommitteeRunner:
             },
             "summary": {
                 "stage_count": 5,
+                "model_call_count": 5,
                 "per_role_usage": {"coordinator_plan": {"total_tokens": 100}},
                 "usage": {"total_tokens": 100},
+                "behavior_metrics": {"decomposition_rate": 1.0},
             },
         }
 
 
-class FakeSingleRunner:
+class FakeSingleShotRunner:
     def __init__(self, config: object, client: object, temperature: float | None = None, max_tokens: int | None = None):
         self.config = config
         self.client = client
@@ -70,7 +72,7 @@ class FakeSingleRunner:
         benchmark_name = getattr(task, "benchmark_name", None) or "hotpotqa_distractor"
         return {
             "run_id": task_id,
-            "architecture": "single_direct_baseline",
+            "architecture": "single_shot_baseline",
             "config_name": "fake-config",
             "config_path": "fake-config-path",
             "started_at_utc": "2026-03-30T00:00:00+00:00",
@@ -93,14 +95,42 @@ class FakeSingleRunner:
             },
             "summary": {
                 "stage_count": 1,
-                "per_role_usage": {"single_direct": {"total_tokens": 40}},
+                "model_call_count": 1,
+                "per_role_usage": {"single_shot": {"total_tokens": 40}},
                 "usage": {"total_tokens": 40},
             },
         }
 
 
+class FakeSingleMultiTurnRunner(FakeSingleShotRunner):
+    def run_task(self, task: object) -> dict[str, object]:
+        payload = super().run_task(task)
+        payload["architecture"] = "single_model_multiturn_baseline"
+        payload["total_elapsed_sec"] = 1.5
+        payload["summary"]["model_call_count"] = 3
+        payload["summary"]["per_role_usage"] = {
+            "single_multiturn_plan": {"total_tokens": 30},
+            "single_multiturn_evidence": {"total_tokens": 30},
+            "single_multiturn_answer": {"total_tokens": 30},
+        }
+        payload["summary"]["usage"] = {"total_tokens": 90}
+        payload["evaluation"]["reference"]["metrics"] = {"answer_em": 0.5, "answer_f1": 0.75}
+        return payload
+
+
+class FakeSingleStructuredRunner(FakeSingleShotRunner):
+    def run_task(self, task: object) -> dict[str, object]:
+        payload = super().run_task(task)
+        payload["architecture"] = "single_model_structured_baseline"
+        payload["total_elapsed_sec"] = 1.2
+        payload["summary"]["per_role_usage"] = {"single_structured": {"total_tokens": 60}}
+        payload["summary"]["usage"] = {"total_tokens": 60}
+        payload["evaluation"]["reference"]["metrics"] = {"answer_em": 0.25, "answer_f1": 0.5}
+        return payload
+
+
 class BenchmarkRunnerTests(unittest.TestCase):
-    def test_benchmark_summary_compares_committee_and_single(self) -> None:
+    def test_benchmark_summary_compares_all_systems(self) -> None:
         temp_dir = ROOT / f".test-benchmark-{uuid4().hex}"
         temp_dir.mkdir(parents=True, exist_ok=False)
         try:
@@ -137,7 +167,13 @@ class BenchmarkRunnerTests(unittest.TestCase):
                 FakeCommitteeRunner,
             ), patch(
                 "committee_llm.benchmark.SingleShotRunner",
-                FakeSingleRunner,
+                FakeSingleShotRunner,
+            ), patch(
+                "committee_llm.benchmark.SingleModelMultiTurnRunner",
+                FakeSingleMultiTurnRunner,
+            ), patch(
+                "committee_llm.benchmark.SingleModelStructuredRunner",
+                FakeSingleStructuredRunner,
             ):
                 exit_code = main(
                     [
@@ -153,22 +189,32 @@ class BenchmarkRunnerTests(unittest.TestCase):
             self.assertEqual(exit_code, 0)
             summary = json.loads((outdir / "summary.json").read_text(encoding="utf-8"))
             self.assertEqual(summary["systems"]["committee"]["completed_count"], 2)
-            self.assertEqual(summary["systems"]["single_direct"]["completed_count"], 2)
+            self.assertEqual(summary["systems"]["single_shot"]["completed_count"], 2)
+            self.assertEqual(summary["systems"]["single_multiturn"]["completed_count"], 2)
+            self.assertEqual(summary["systems"]["single_structured"]["completed_count"], 2)
             self.assertEqual(
                 summary["systems"]["committee"]["aggregate"]["reference_metrics"]["overall"]["answer_em"],
                 1.0,
             )
             self.assertEqual(
-                summary["systems"]["single_direct"]["aggregate"]["reference_metrics"]["overall"]["answer_f1"],
+                summary["systems"]["single_multiturn"]["aggregate"]["reference_metrics"]["overall"]["answer_f1"],
+                0.75,
+            )
+            self.assertEqual(
+                summary["systems"]["single_shot"]["aggregate"]["reference_metrics"]["overall"]["answer_f1"],
                 0.5,
             )
             self.assertEqual(
-                summary["comparison"]["committee_vs_single_direct"]["metric_deltas"]["answer_em"],
+                summary["comparison"]["committee_vs_single_shot"]["metric_deltas"]["answer_em"],
                 1.0,
             )
             self.assertEqual(
-                summary["comparison"]["committee_vs_single_direct"]["token_ratio"],
+                summary["comparison"]["committee_vs_single_shot"]["token_ratio"],
                 2.5,
+            )
+            self.assertEqual(
+                summary["systems"]["committee"]["aggregate"]["behavior_metrics"]["decomposition_rate"],
+                1.0,
             )
         finally:
             shutil.rmtree(temp_dir, ignore_errors=True)

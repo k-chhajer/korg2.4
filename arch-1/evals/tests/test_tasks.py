@@ -69,12 +69,15 @@ class TaskSpecTests(unittest.TestCase):
                 "benchmark_split": "dev",
                 "task_type": "open_qa",
                 "prompt": "Who wrote Hamlet?",
+                "context": "[1] Hamlet\nHamlet was written by William Shakespeare.",
                 "reference_answers": ["William Shakespeare", "Shakespeare"],
+                "metadata": {"supporting_facts": [["Hamlet", 0]]},
             }
         )
         qa_eval = evaluate_answer(qa_task, "William Shakespeare")
         self.assertEqual(qa_eval["reference"]["metrics"]["answer_em"], 1.0)
         self.assertEqual(qa_eval["reference"]["metrics"]["answer_f1"], 1.0)
+        self.assertEqual(qa_eval["reference"]["metrics"]["supporting_fact_context_coverage"], 1.0)
 
         mcq_task = TaskSpec.from_dict(
             {

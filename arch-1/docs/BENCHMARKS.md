@@ -1,86 +1,73 @@
 # Benchmark Protocol
 
-This harness is now set up to benchmark both:
+This evaluation plan is intentionally small and thesis-linked. The goal is to test decomposition, evidence use, critique, revision, and synthesis without bloating runtime.
 
-- `committee_v1_explicit_coordination`
-- `single_direct_baseline`
+Main benchmark:
 
-The intended publication-facing use is to compare quality and latency side by side on canonical benchmarks, while keeping the underlying model fixed.
+- HotpotQA, 100 examples
 
-## Recommended Benchmarks
+Secondary benchmark:
 
-- HotpotQA distractor dev: multi-hop reading comprehension with official answer EM/F1. Official site: https://hotpotqa.github.io/
-- MuSiQue-Ans dev: compositional multi-hop QA with normalized answer EM/F1. Official repo: https://github.com/StonyBrookNLP/musique
-- GPQA: hard graduate-level multiple-choice science QA with accuracy. Paper page: https://arxiv.org/abs/2311.12022
+- FRAMES only if the researcher role performs actual retrieval beyond provided context
+- current local scaffold does not do live retrieval, so FRAMES is not enabled yet
 
-## Research Setup
+Stress benchmark:
 
-For a publishable benchmark table:
+- custom set, 50 examples
+- should target unsupported-jump failures, premature finalization, weak evidence use, and critique-sensitive revisions
 
-1. Use the same base model across all systems.
-2. Use deterministic decoding or as close as your backend allows.
-3. Report quality metrics and latency together.
-4. Report total token usage from the backend trace.
-5. Keep benchmark context intact for reading-comprehension tasks.
-6. Do not mix closed-book and provided-context variants in one result table.
+Systems to compare:
 
-## Suggested Config
+- `single_shot`
+- `single_multiturn`
+- `single_structured`
+- `committee`
 
-Use the evaluation configs in [qwen3_8b_committee_eval.json](/C:/Users/luthi/Documents/korg/arch-1/implementation/configs/qwen3_8b_committee_eval.json) or [qwen3_30b_committee_eval.json](/C:/Users/luthi/Documents/korg/arch-1/implementation/configs/qwen3_30b_committee_eval.json) so every role runs at `temperature = 0.0`.
+Metrics to report:
 
-## Convert Official Data
+- answer accuracy
+- answer F1 where applicable
+- supporting-fact title recall / precision / context coverage on HotpotQA
+- total input tokens
+- total output tokens
+- total tokens
+- number of model calls
+- wall-clock latency
+- decomposition rate
+- evidence-grounding rate
+- revision-after-critique rate
+- premature-finalization rate
+- unsupported-claim rate
 
-HotpotQA:
+Required ablations:
+
+- full committee
+- no critic
+- no researcher
+- no analyst
+- order swap: coordinator -> analyst -> researcher -> critic -> coordinator
+- order swap: coordinator -> researcher -> critic -> analyst -> coordinator
+- budget-matched single-model baseline
+
+Benchmarks should be run only after config verification:
+
+- if `paper_claim_blockers` is non-empty, the run is a scaffold run, not a paper-valid post-trained committee result
+
+Recommended local commands:
 
 ```powershell
-cd C:\Users\luthi\Documents\korg\arch-1
+cd C:\Users\luthi\Documents\korg\korg2_4_remote\arch-1
 $env:PYTHONPATH = "implementation"
-python -m committee_llm.benchmark_data --suite hotpotqa --input evals\data\hotpot_dev_distractor_v1.json --output evals\data\benchmarks\hotpotqa_dev.jsonl
+$env:OPENAI_API_KEY = "EMPTY"
+python -m unittest discover -s evals\tests
+python -m committee_llm.benchmark_data --suite hotpotqa --input evals\data\hotpot_dev_distractor_v1.json --output evals\data\benchmarks\hotpotqa_dev.jsonl --limit 100
+python -m committee_llm.benchmark --config implementation\configs\qwen3_8b_ollama_eval.json --tasks evals\data\benchmarks\hotpotqa_dev.jsonl --outdir evals\runs\hotpotqa_arch1_local --system all --limit 100
+python -m committee_llm.benchmark_report --summary evals\runs\hotpotqa_arch1_local\summary.json --output docs\BENCHMARK_RESULTS.md
 ```
 
-MuSiQue:
+Compute-friendly recommendation:
 
-```powershell
-python -m committee_llm.benchmark_data --suite musique --input evals\data\musique_ans_v1.0_dev.jsonl --output evals\data\benchmarks\musique_dev.jsonl
-```
-
-GPQA:
-
-```powershell
-python -m committee_llm.benchmark_data --suite gpqa --input evals\data\gpqa_diamond.csv --output evals\data\benchmarks\gpqa_diamond.jsonl
-```
-
-## Run Benchmark Comparison
-
-```powershell
-python -m committee_llm.benchmark --config implementation\configs\qwen3_8b_committee_eval.json --tasks evals\data\benchmarks\hotpotqa_dev.jsonl --outdir evals\runs\hotpotqa_qwen8b --system both
-```
-
-The benchmark summary includes:
-
-- per-system mean latency
-- per-system token usage
-- per-system benchmark metrics
-- committee-vs-single metric deltas
-- committee-vs-single latency and token ratios
-
-## Render Markdown Report
-
-After a run finishes, render the JSON summary into a publication-facing Markdown file:
-
-```powershell
-python -m committee_llm.benchmark_report --summary evals\runs\hotpotqa_qwen8b\summary.json --output docs\BENCHMARK_RESULTS.md
-```
-
-The Markdown report includes:
-
-- system-level throughput, latency, and token tables
-- overall and per-benchmark metric tables
-- comparison ratios and metric deltas
-- explicit failure rows when a run did not complete cleanly
-
-## Notes
-
-- HotpotQA data can be downloaded from the official dataset link on the HotpotQA site.
-- MuSiQue conversion expects the official JSON or JSONL files after you download them from the official repository instructions.
-- GPQA distribution may require separately obtaining the official file; once you have it locally, the converter expects a CSV with one correct answer and three incorrect answers per row.
+- run HotpotQA first
+- add the custom stress set second
+- do ablations on a smaller subset after the main trend is established
+- do not run FRAMES until retrieval is truly part of the pipeline
