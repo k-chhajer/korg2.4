@@ -6,6 +6,7 @@ Read these in order:
 
 - [ARCHITECTURE_1.md](C:/Users/luthi/Documents/korg/korg2_4_remote/arch-1/docs/ARCHITECTURE_1.md)
 - [BENCHMARKS.md](C:/Users/luthi/Documents/korg/korg2_4_remote/arch-1/docs/BENCHMARKS.md)
+- [REMOTE_EVAL_PLAN.md](C:/Users/luthi/Documents/korg/korg2_4_remote/arch-1/docs/REMOTE_EVAL_PLAN.md)
 - [BENCHMARK_RESULTS.md](C:/Users/luthi/Documents/korg/korg2_4_remote/arch-1/docs/BENCHMARK_RESULTS.md)
 
 Implementation entry points:
