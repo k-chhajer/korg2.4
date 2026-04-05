@@ -1,0 +1,513 @@
+{
+  "run_id": "gpqa-00141",
+  "architecture": "architecture_1_posttrained_committee",
+  "architecture_spec": {
+    "family": "architecture_1",
+    "description": "Architecture 1 retry scaffold on a local llama-server endpoint backed by the cached Qwen3 8B GGUF blob.",
+    "specialization_source": "prompt_scaffold_only",
+    "stage_sequence": [
+      "coordinator_plan",
+      "researcher",
+      "analyst",
+      "critic",
+      "coordinator_finalize"
+    ],
+    "paper_reference_role_order": [
+      "coordinator",
+      "researcher",
+      "analyst",
+      "critic",
+      "coordinator"
+    ],
+    "paper_claim_blockers": [
+      "Role specialization source is not set to post_trained_role_specialists, so this config should be treated as a prompt scaffold."
+    ]
+  },
+  "config_name": "qwen3_8b_local_llamaserver_retry400_abs",
+  "config_path": "/Users/luthiraa/Documents/korg2.4/arch-1/evals/runs/gpqa_diamond_modal_committee_198_20260405/qwen3_8b_local_llamaserver_retry400_abs.json",
+  "started_at_utc": "2026-04-05T15:58:54.185034+00:00",
+  "total_elapsed_sec": 307.62210704101017,
+  "input": "1-bromobenzene-2-d is treated with NaNH2 in condensed ammonia solvent. How many possible organic products are there in this reaction?",
+  "task": {
+    "id": "gpqa-00141",
+    "prompt": "1-bromobenzene-2-d is treated with NaNH2 in condensed ammonia solvent. How many possible organic products are there in this reaction?",
+    "domain": "Chemistry",
+    "benchmark_name": "gpqa",
+    "benchmark_split": "eval",
+    "task_type": "multiple_choice",
+    "context": null,
+    "objectives": [],
+    "constraints": [],
+    "deliverable": "Select exactly one answer choice. Start the response with `Answer: <label>` and then briefly justify the choice.",
+    "evaluation_criteria": [
+      "The selected label should match the correct answer choice."
+    ],
+    "references": [],
+    "reference_answers": [],
+    "choices": [
+      {
+        "label": "A",
+        "text": "2"
+      },
+      {
+        "label": "B",
+        "text": "1"
+      },
+      {
+        "label": "C",
+        "text": "3"
+      },
+      {
+        "label": "D",
+        "text": "4"
+      }
+    ],
+    "correct_choice": "C",
+    "checks": {},
+    "metadata": {
+      "source_dataset": "GPQA",
+      "subdomain": "Organic Chemistry"
+    }
+  },
+  "metadata": {
+    "source_dataset": "GPQA",
+    "subdomain": "Organic Chemistry"
+  },
+  "steps": [
+    {
+      "role": "coordinator_plan",
+      "role_specialization": "coordinator",
+      "checkpoint_name": "local-llama-server-qwen3-8b-gguf",
+      "model": "sha256-a3de86cd1c132c822487ededd47a324c50491393e6565cd14bafa40d0b8e686f",
+      "temperature": 0.0,
+      "max_tokens": 400,
+      "system_prompt": "You are the coordinator in a post-trained role-specialized committee of language models.\n\nYour job is to convert the user task into a clean execution brief for downstream agents. You are not the final answerer yet.\n\nRules:\n- Restate the real problem instead of mirroring the wording mechanically.\n- Decompose the task into the smallest useful reasoning units.\n- Identify constraints, evaluation criteria, and failure modes.\n- Tell the researcher exactly what information or evidence would matter.\n- Do not solve the task in full.\n\nReturn exactly these section headers:\n\nProblem Restatement:\nSuccess Criteria:\nPlan:\nRisks and Unknowns:\nResearch Brief:",
+      "local_context_view": [
+        "task_prompt",
+        "task_domain",
+        "benchmark_name",
+        "benchmark_split",
+        "task_type",
+        "task_context",
+        "task_objectives",
+        "task_constraints",
+        "answer_choices",
+        "deliverable",
+        "evaluation_criteria",
+        "provided_references"
+      ],
+      "output_schema": [
+        "Problem Restatement",
+        "Success Criteria",
+        "Plan",
+        "Risks and Unknowns",
+        "Research Brief"
+      ],
+      "schema_validation": {
+        "required_headers": [
+          "Problem Restatement",
+          "Success Criteria",
+          "Plan",
+          "Risks and Unknowns",
+          "Research Brief"
+        ],
+        "present_headers": [],
+        "missing_headers": [
+          "Problem Restatement",
+          "Success Criteria",
+          "Plan",
+          "Risks and Unknowns",
+          "Research Brief"
+        ],
+        "is_valid": false,
+        "sections": {
+          "Problem Restatement": "",
+          "Success Criteria": "",
+          "Plan": "",
+          "Risks and Unknowns": "",
+          "Research Brief": ""
+        }
+      },
+      "user_prompt": "<task_prompt>\n1-bromobenzene-2-d is treated with NaNH2 in condensed ammonia solvent. How many possible organic products are there in this reaction?\n</task_prompt>\n\n<task_domain>\nChemistry\n</task_domain>\n\n<benchmark_name>\ngpqa\n</benchmark_name>\n\n<benchmark_split>\neval\n</benchmark_split>\n\n<task_type>\nmultiple_choice\n</task_type>\n\n<answer_choices>\n- A. 2\n- B. 1\n- C. 3\n- D. 4\n</answer_choices>\n\n<deliverable>\nSelect exactly one answer choice. Start the response with `Answer: <label>` and then briefly justify the choice.\n</deliverable>\n\n<evaluation_criteria>\n- The selected label should match the correct answer choice.\n</evaluation_criteria>\n\nYou are stage 1 of a fixed committee pipeline.\n\nDecompose the task for downstream specialists. Do not solve it yet.\n\nReturn exactly these section headers in order: Problem Restatement:, Success Criteria:, Plan:, Risks and Unknowns:, Research Brief:.",
+      "response": "",
+      "elapsed_sec": 85.8853264170466,
+      "usage": {
+        "completion_tokens": 400,
+        "prompt_tokens": 355,
+        "total_tokens": 755
+      }
+    },
+    {
+      "role": "researcher",
+      "role_specialization": "researcher",
+      "checkpoint_name": "local-llama-server-qwen3-8b-gguf",
+      "model": "sha256-a3de86cd1c132c822487ededd47a324c50491393e6565cd14bafa40d0b8e686f",
+      "temperature": 0.0,
+      "max_tokens": 400,
+      "system_prompt": "You are the researcher in a post-trained role-specialized committee of language models.\n\nYour job is to expand the coordinator brief into useful evidence, options, assumptions, and unresolved questions that an analyst can use.\n\nRules:\n- Surface facts, relevant distinctions, and plausible alternatives.\n- Be explicit about assumptions when facts are unavailable.\n- Separate observation from inference.\n- Do not write the final polished answer.\n- Do not ignore uncertainty.\n\nReturn exactly these section headers:\n\nEvidence and Observations:\nOptions:\nAssumptions:\nOpen Questions:\nResearch Handoff:",
+      "local_context_view": [
+        "task_prompt",
+        "task_domain",
+        "benchmark_name",
+        "benchmark_split",
+        "task_type",
+        "task_context",
+        "task_objectives",
+        "task_constraints",
+        "answer_choices",
+        "deliverable",
+        "evaluation_criteria",
+        "provided_references",
+        "coordinator_plan"
+      ],
+      "output_schema": [
+        "Evidence and Observations",
+        "Options",
+        "Assumptions",
+        "Open Questions",
+        "Research Handoff"
+      ],
+      "schema_validation": {
+        "required_headers": [
+          "Evidence and Observations",
+          "Options",
+          "Assumptions",
+          "Open Questions",
+          "Research Handoff"
+        ],
+        "present_headers": [],
+        "missing_headers": [
+          "Evidence and Observations",
+          "Options",
+          "Assumptions",
+          "Open Questions",
+          "Research Handoff"
+        ],
+        "is_valid": false,
+        "sections": {
+          "Evidence and Observations": "",
+          "Options": "",
+          "Assumptions": "",
+          "Open Questions": "",
+          "Research Handoff": ""
+        }
+      },
+      "user_prompt": "<task_prompt>\n1-bromobenzene-2-d is treated with NaNH2 in condensed ammonia solvent. How many possible organic products are there in this reaction?\n</task_prompt>\n\n<task_domain>\nChemistry\n</task_domain>\n\n<benchmark_name>\ngpqa\n</benchmark_name>\n\n<benchmark_split>\neval\n</benchmark_split>\n\n<task_type>\nmultiple_choice\n</task_type>\n\n<answer_choices>\n- A. 2\n- B. 1\n- C. 3\n- D. 4\n</answer_choices>\n\n<deliverable>\nSelect exactly one answer choice. Start the response with `Answer: <label>` and then briefly justify the choice.\n</deliverable>\n\n<evaluation_criteria>\n- The selected label should match the correct answer choice.\n</evaluation_criteria>\n\n<coordinator_plan>\n\n</coordinator_plan>\n\nYou are stage 2 of a fixed committee pipeline.\n\nGather candidate evidence, relevant distinctions, and unresolved questions.\n\nReturn exactly these section headers in order: Evidence and Observations:, Options:, Assumptions:, Open Questions:, Research Handoff:.",
+      "response": "",
+      "elapsed_sec": 54.53802541596815,
+      "usage": {
+        "completion_tokens": 400,
+        "prompt_tokens": 345,
+        "total_tokens": 745
+      }
+    },
+    {
+      "role": "analyst",
+      "role_specialization": "analyst",
+      "checkpoint_name": "local-llama-server-qwen3-8b-gguf",
+      "model": "sha256-a3de86cd1c132c822487ededd47a324c50491393e6565cd14bafa40d0b8e686f",
+      "temperature": 0.0,
+      "max_tokens": 400,
+      "system_prompt": "You are the analyst in a post-trained role-specialized committee of language models.\n\nYour job is to synthesize the user task, the coordinator brief, and the researcher notes into the strongest draft answer available.\n\nRules:\n- Produce a clear answer, not a loose brainstorm.\n- Preserve important caveats, but do not hide behind them.\n- Resolve ambiguity where possible.\n- Make the draft usable by the final coordinator.\n\nReturn exactly these section headers:\n\nCore Answer:\nReasoning:\nCaveats:\nDraft Deliverable:",
+      "local_context_view": [
+        "task_prompt",
+        "task_domain",
+        "benchmark_name",
+        "benchmark_split",
+        "task_type",
+        "task_context",
+        "task_objectives",
+        "task_constraints",
+        "answer_choices",
+        "deliverable",
+        "evaluation_criteria",
+        "provided_references",
+        "coordinator_plan",
+        "researcher_notes"
+      ],
+      "output_schema": [
+        "Core Answer",
+        "Reasoning",
+        "Caveats",
+        "Draft Deliverable"
+      ],
+      "schema_validation": {
+        "required_headers": [
+          "Core Answer",
+          "Reasoning",
+          "Caveats",
+          "Draft Deliverable"
+        ],
+        "present_headers": [],
+        "missing_headers": [
+          "Core Answer",
+          "Reasoning",
+          "Caveats",
+          "Draft Deliverable"
+        ],
+        "is_valid": false,
+        "sections": {
+          "Core Answer": "",
+          "Reasoning": "",
+          "Caveats": "",
+          "Draft Deliverable": ""
+        }
+      },
+      "user_prompt": "<task_prompt>\n1-bromobenzene-2-d is treated with NaNH2 in condensed ammonia solvent. How many possible organic products are there in this reaction?\n</task_prompt>\n\n<task_domain>\nChemistry\n</task_domain>\n\n<benchmark_name>\ngpqa\n</benchmark_name>\n\n<benchmark_split>\neval\n</benchmark_split>\n\n<task_type>\nmultiple_choice\n</task_type>\n\n<answer_choices>\n- A. 2\n- B. 1\n- C. 3\n- D. 4\n</answer_choices>\n\n<deliverable>\nSelect exactly one answer choice. Start the response with `Answer: <label>` and then briefly justify the choice.\n</deliverable>\n\n<evaluation_criteria>\n- The selected label should match the correct answer choice.\n</evaluation_criteria>\n\n<coordinator_plan>\n\n</coordinator_plan>\n\n<researcher_notes>\n\n</researcher_notes>\n\nYou are stage 3 of a fixed committee pipeline.\n\nConvert the gathered material into a structured reasoning path and tentative solution.\n\nReturn exactly these section headers in order: Core Answer:, Reasoning:, Caveats:, Draft Deliverable:.",
+      "response": "",
+      "elapsed_sec": 57.83159020799212,
+      "usage": {
+        "completion_tokens": 400,
+        "prompt_tokens": 345,
+        "total_tokens": 745
+      }
+    },
+    {
+      "role": "critic",
+      "role_specialization": "critic",
+      "checkpoint_name": "local-llama-server-qwen3-8b-gguf",
+      "model": "sha256-a3de86cd1c132c822487ededd47a324c50491393e6565cd14bafa40d0b8e686f",
+      "temperature": 0.0,
+      "max_tokens": 400,
+      "system_prompt": "You are the critic in a post-trained role-specialized committee of language models.\n\nYour job is to attack the analyst draft for missing evidence, weak reasoning, unsupported claims, and practical flaws.\n\nRules:\n- Focus on substantive defects, not stylistic noise.\n- Distinguish major issues from minor issues.\n- Call out where the draft overreaches.\n- Request concrete revisions.\n- Do not fully rewrite the answer unless the draft is unusable.\n\nReturn exactly these section headers:\n\nMajor Issues:\nMinor Issues:\nMissing Evidence:\nRequired Revisions:",
+      "local_context_view": [
+        "task_prompt",
+        "task_domain",
+        "benchmark_name",
+        "benchmark_split",
+        "task_type",
+        "task_context",
+        "task_objectives",
+        "task_constraints",
+        "answer_choices",
+        "deliverable",
+        "evaluation_criteria",
+        "provided_references",
+        "coordinator_plan",
+        "researcher_notes",
+        "analyst_draft"
+      ],
+      "output_schema": [
+        "Major Issues",
+        "Minor Issues",
+        "Missing Evidence",
+        "Required Revisions"
+      ],
+      "schema_validation": {
+        "required_headers": [
+          "Major Issues",
+          "Minor Issues",
+          "Missing Evidence",
+          "Required Revisions"
+        ],
+        "present_headers": [],
+        "missing_headers": [
+          "Major Issues",
+          "Minor Issues",
+          "Missing Evidence",
+          "Required Revisions"
+        ],
+        "is_valid": false,
+        "sections": {
+          "Major Issues": "",
+          "Minor Issues": "",
+          "Missing Evidence": "",
+          "Required Revisions": ""
+        }
+      },
+      "user_prompt": "<task_prompt>\n1-bromobenzene-2-d is treated with NaNH2 in condensed ammonia solvent. How many possible organic products are there in this reaction?\n</task_prompt>\n\n<task_domain>\nChemistry\n</task_domain>\n\n<benchmark_name>\ngpqa\n</benchmark_name>\n\n<benchmark_split>\neval\n</benchmark_split>\n\n<task_type>\nmultiple_choice\n</task_type>\n\n<answer_choices>\n- A. 2\n- B. 1\n- C. 3\n- D. 4\n</answer_choices>\n\n<deliverable>\nSelect exactly one answer choice. Start the response with `Answer: <label>` and then briefly justify the choice.\n</deliverable>\n\n<evaluation_criteria>\n- The selected label should match the correct answer choice.\n</evaluation_criteria>\n\n<coordinator_plan>\n\n</coordinator_plan>\n\n<researcher_notes>\n\n</researcher_notes>\n\n<analyst_draft>\n\n</analyst_draft>\n\nYou are stage 4 of a fixed committee pipeline.\n\nStress-test the candidate solution, flag unsupported jumps, and request concrete revisions.\n\nReturn exactly these section headers in order: Major Issues:, Minor Issues:, Missing Evidence:, Required Revisions:.",
+      "response": "",
+      "elapsed_sec": 51.66482900001574,
+      "usage": {
+        "completion_tokens": 400,
+        "prompt_tokens": 363,
+        "total_tokens": 763
+      }
+    },
+    {
+      "role": "coordinator_finalize",
+      "role_specialization": "coordinator",
+      "checkpoint_name": "local-llama-server-qwen3-8b-gguf",
+      "model": "sha256-a3de86cd1c132c822487ededd47a324c50491393e6565cd14bafa40d0b8e686f",
+      "temperature": 0.0,
+      "max_tokens": 400,
+      "system_prompt": "You are the final coordinator in a post-trained role-specialized committee of language models.\n\nYour job is to produce the final answer after reading the earlier plan, the research notes, the analyst draft, and the critic feedback.\n\nRules:\n- Keep the strongest parts of the analyst draft.\n- Fix valid issues raised by the critic.\n- Remove unsupported claims.\n- Produce one final answer that can stand on its own.\n- Include residual risks only if they materially affect confidence or deployment.\n\nReturn exactly these section headers:\n\nFinal Answer:\nDecision Rationale:\nResidual Risks:",
+      "local_context_view": [
+        "task_prompt",
+        "task_domain",
+        "benchmark_name",
+        "benchmark_split",
+        "task_type",
+        "task_context",
+        "task_objectives",
+        "task_constraints",
+        "answer_choices",
+        "deliverable",
+        "evaluation_criteria",
+        "provided_references",
+        "coordinator_plan",
+        "researcher_notes",
+        "analyst_draft",
+        "critic_feedback"
+      ],
+      "output_schema": [
+        "Final Answer",
+        "Decision Rationale",
+        "Residual Risks"
+      ],
+      "schema_validation": {
+        "required_headers": [
+          "Final Answer",
+          "Decision Rationale",
+          "Residual Risks"
+        ],
+        "present_headers": [],
+        "missing_headers": [
+          "Final Answer",
+          "Decision Rationale",
+          "Residual Risks"
+        ],
+        "is_valid": false,
+        "sections": {
+          "Final Answer": "",
+          "Decision Rationale": "",
+          "Residual Risks": ""
+        }
+      },
+      "user_prompt": "<task_prompt>\n1-bromobenzene-2-d is treated with NaNH2 in condensed ammonia solvent. How many possible organic products are there in this reaction?\n</task_prompt>\n\n<task_domain>\nChemistry\n</task_domain>\n\n<benchmark_name>\ngpqa\n</benchmark_name>\n\n<benchmark_split>\neval\n</benchmark_split>\n\n<task_type>\nmultiple_choice\n</task_type>\n\n<answer_choices>\n- A. 2\n- B. 1\n- C. 3\n- D. 4\n</answer_choices>\n\n<deliverable>\nSelect exactly one answer choice. Start the response with `Answer: <label>` and then briefly justify the choice.\n</deliverable>\n\n<evaluation_criteria>\n- The selected label should match the correct answer choice.\n</evaluation_criteria>\n\n<coordinator_plan>\n\n</coordinator_plan>\n\n<researcher_notes>\n\n</researcher_notes>\n\n<analyst_draft>\n\n</analyst_draft>\n\n<critic_feedback>\n\n</critic_feedback>\n\nYou are stage 5 of a fixed committee pipeline.\n\nDecide whether to accept the draft, integrate the valid critique, and produce the final answer.\n\nReturn exactly these section headers in order: Final Answer:, Decision Rationale:, Residual Risks:.",
+      "response": "",
+      "elapsed_sec": 57.68317508400651,
+      "usage": {
+        "completion_tokens": 400,
+        "prompt_tokens": 380,
+        "total_tokens": 780
+      }
+    }
+  ],
+  "final_stage": "",
+  "final_answer": "",
+  "evaluation": {
+    "domain": "Chemistry",
+    "deliverable": "Select exactly one answer choice. Start the response with `Answer: <label>` and then briefly justify the choice.",
+    "evaluation_criteria": [
+      "The selected label should match the correct answer choice."
+    ],
+    "reference_count": 0,
+    "check_count": 0,
+    "passed": null,
+    "score": null,
+    "answer_word_count": 0,
+    "answer_char_count": 0,
+    "checks": [],
+    "reference": {
+      "benchmark_name": "gpqa",
+      "benchmark_split": "eval",
+      "task_type": "multiple_choice",
+      "metrics": {
+        "choice_accuracy": 0.0
+      },
+      "scored_answer": null,
+      "predicted_choice": null,
+      "choice_count": 4,
+      "reference_answer_count": 0
+    }
+  },
+  "summary": {
+    "stage_count": 5,
+    "model_call_count": 5,
+    "per_role_elapsed_sec": {
+      "coordinator_plan": 85.8853264170466,
+      "researcher": 54.53802541596815,
+      "analyst": 57.83159020799212,
+      "critic": 51.66482900001574,
+      "coordinator_finalize": 57.68317508400651
+    },
+    "per_role_usage": {
+      "coordinator_plan": {
+        "completion_tokens": 400,
+        "prompt_tokens": 355,
+        "total_tokens": 755
+      },
+      "researcher": {
+        "completion_tokens": 400,
+        "prompt_tokens": 345,
+        "total_tokens": 745
+      },
+      "analyst": {
+        "completion_tokens": 400,
+        "prompt_tokens": 345,
+        "total_tokens": 745
+      },
+      "critic": {
+        "completion_tokens": 400,
+        "prompt_tokens": 363,
+        "total_tokens": 763
+      },
+      "coordinator_finalize": {
+        "completion_tokens": 400,
+        "prompt_tokens": 380,
+        "total_tokens": 780
+      }
+    },
+    "usage": {
+      "completion_tokens": 2000,
+      "prompt_tokens": 1788,
+      "total_tokens": 3788
+    },
+    "behavior_metrics": {
+      "decomposition_rate": 0.0,
+      "evidence_grounding_rate": 0.0,
+      "revision_after_critique_rate": 0.0,
+      "premature_finalization_rate": 1.0,
+      "unsupported_claim_rate": 0.0
+    },
+    "schema_validity": {
+      "coordinator_plan": {
+        "is_valid": false,
+        "missing_headers": [
+          "Problem Restatement",
+          "Success Criteria",
+          "Plan",
+          "Risks and Unknowns",
+          "Research Brief"
+        ]
+      },
+      "researcher": {
+        "is_valid": false,
+        "missing_headers": [
+          "Evidence and Observations",
+          "Options",
+          "Assumptions",
+          "Open Questions",
+          "Research Handoff"
+        ]
+      },
+      "analyst": {
+        "is_valid": false,
+        "missing_headers": [
+          "Core Answer",
+          "Reasoning",
+          "Caveats",
+          "Draft Deliverable"
+        ]
+      },
+      "critic": {
+        "is_valid": false,
+        "missing_headers": [
+          "Major Issues",
+          "Minor Issues",
+          "Missing Evidence",
+          "Required Revisions"
+        ]
+      },
+      "coordinator_finalize": {
+        "is_valid": false,
+        "missing_headers": [
+          "Final Answer",
+          "Decision Rationale",
+          "Residual Risks"
+        ]
+      }
+    }
+  }
+}

@@ -48,6 +48,13 @@ def _write_json(path: Path, payload: dict[str, object]) -> None:
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=True), encoding="utf-8")
 
 
+def _read_existing_trace(path: Path) -> dict[str, Any]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"Existing trace at {path} must be a JSON object.")
+    return payload
+
+
 def _aggregate_reference_metrics(traces: list[dict[str, Any]]) -> dict[str, Any]:
     overall_sums: dict[str, float] = {}
     overall_counts: dict[str, int] = {}
@@ -226,6 +233,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--limit", type=int, help="Optional max number of tasks to run.")
     parser.add_argument("--continue-on-error", action="store_true")
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Reuse existing per-task JSON outputs in the outdir instead of rerunning them.",
+    )
     return parser
 
 
@@ -264,6 +276,21 @@ def main(argv: list[str] | None = None) -> int:
         for index, task in enumerate(tasks, start=1):
             task_id = str(task.task_id or f"task-{index:05d}")
             task.task_id = task_id
+            output_path = outdir / system_name / f"{task_id}.json"
+
+            if args.resume and output_path.exists():
+                try:
+                    trace = _read_existing_trace(output_path)
+                except Exception as exc:
+                    print(
+                        f"[{system_name} {index}/{len(tasks)}] could not reuse {output_path}: {exc}; rerunning",
+                        file=sys.stderr,
+                    )
+                else:
+                    completed_runs.append({"task_id": task_id, "output_path": output_path, "trace": trace})
+                    print(f"[{system_name} {index}/{len(tasks)}] reused {output_path}", file=sys.stderr)
+                    continue
+
             try:
                 trace = runner.run_task(task)
             except Exception as exc:
@@ -274,7 +301,6 @@ def main(argv: list[str] | None = None) -> int:
                     break
                 continue
 
-            output_path = outdir / system_name / f"{task_id}.json"
             _write_json(output_path, trace)
             completed_runs.append({"task_id": task_id, "output_path": output_path, "trace": trace})
             print(f"[{system_name} {index}/{len(tasks)}] wrote {output_path}", file=sys.stderr)

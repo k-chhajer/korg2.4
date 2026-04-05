@@ -5,6 +5,7 @@ import shutil
 import sys
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 from uuid import uuid4
 
@@ -216,6 +217,76 @@ class BenchmarkRunnerTests(unittest.TestCase):
                 summary["systems"]["committee"]["aggregate"]["behavior_metrics"]["decomposition_rate"],
                 1.0,
             )
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def test_benchmark_resume_reuses_existing_outputs(self) -> None:
+        temp_dir = ROOT / f".test-benchmark-resume-{uuid4().hex}"
+        temp_dir.mkdir(parents=True, exist_ok=False)
+        try:
+            tasks_path = temp_dir / "tasks.jsonl"
+            tasks_path.write_text(
+                "\n".join(
+                    [
+                        json.dumps(
+                            {
+                                "id": "task-1",
+                                "benchmark_name": "hotpotqa_distractor",
+                                "task_type": "open_qa",
+                                "prompt": "Question 1?",
+                                "reference_answers": ["Answer 1"],
+                            }
+                        ),
+                        json.dumps(
+                            {
+                                "id": "task-2",
+                                "benchmark_name": "hotpotqa_distractor",
+                                "task_type": "open_qa",
+                                "prompt": "Question 2?",
+                                "reference_answers": ["Answer 2"],
+                            }
+                        ),
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            outdir = temp_dir / "runs"
+            existing_trace = FakeSingleShotRunner(config=None, client=None).run_task(
+                SimpleNamespace(task_id="task-1", benchmark_name="hotpotqa_distractor", prompt="Question 1?")
+            )
+            existing_trace["summary"]["usage"]["total_tokens"] = 999
+            existing_trace["summary"]["per_role_usage"]["single_shot"]["total_tokens"] = 999
+            existing_path = outdir / "single_shot" / "task-1.json"
+            existing_path.parent.mkdir(parents=True, exist_ok=True)
+            existing_path.write_text(json.dumps(existing_trace, indent=2), encoding="utf-8")
+
+            with patch("committee_llm.benchmark.OpenAICompatibleChatClient", DummyClient), patch(
+                "committee_llm.benchmark.SingleShotRunner",
+                FakeSingleShotRunner,
+            ):
+                exit_code = main(
+                    [
+                        "--config",
+                        str(ROOT / "implementation" / "configs" / "qwen3_8b_committee.json"),
+                        "--tasks",
+                        str(tasks_path),
+                        "--outdir",
+                        str(outdir),
+                        "--system",
+                        "single_shot",
+                        "--resume",
+                    ]
+                )
+
+            self.assertEqual(exit_code, 0)
+            reused_trace = json.loads(existing_path.read_text(encoding="utf-8"))
+            self.assertEqual(reused_trace["summary"]["usage"]["total_tokens"], 999)
+
+            summary = json.loads((outdir / "summary.json").read_text(encoding="utf-8"))
+            self.assertEqual(summary["systems"]["single_shot"]["completed_count"], 2)
+            self.assertEqual(summary["systems"]["single_shot"]["aggregate"]["usage"]["total_tokens"], 1039)
+            self.assertEqual(summary["comparison"], {})
         finally:
             shutil.rmtree(temp_dir, ignore_errors=True)
 

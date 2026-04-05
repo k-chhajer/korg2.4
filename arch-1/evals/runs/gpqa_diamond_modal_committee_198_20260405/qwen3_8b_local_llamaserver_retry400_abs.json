@@ -1,0 +1,69 @@
+{
+  "name": "qwen3_8b_local_llamaserver_retry400_abs",
+  "provider": {
+    "api_base": "http://127.0.0.1:8081/v1",
+    "api_key_env": "OPENAI_API_KEY",
+    "timeout_sec": 1800
+  },
+  "defaults": {
+    "model": "/Users/luthiraa/.ollama/models/blobs/sha256-a3de86cd1c132c822487ededd47a324c50491393e6565cd14bafa40d0b8e686f",
+    "temperature": 0.0,
+    "max_tokens": 400
+  },
+  "architecture": {
+    "family": "architecture_1",
+    "description": "Architecture 1 retry scaffold on a local llama-server endpoint backed by the cached Qwen3 8B GGUF blob.",
+    "specialization_source": "prompt_scaffold_only",
+    "stage_sequence": [
+      "coordinator_plan",
+      "researcher",
+      "analyst",
+      "critic",
+      "coordinator_finalize"
+    ],
+    "paper_reference_role_order": [
+      "coordinator",
+      "researcher",
+      "analyst",
+      "critic",
+      "coordinator"
+    ]
+  },
+  "roles": {
+    "coordinator_plan": {
+      "system_prompt_path": "/Users/luthiraa/Documents/korg2.4/arch-1/implementation/prompts/coordinator_plan.md",
+      "role_specialization": "coordinator",
+      "checkpoint_name": "local-llama-server-qwen3-8b-gguf",
+      "temperature": 0.0,
+      "max_tokens": 400
+    },
+    "researcher": {
+      "system_prompt_path": "/Users/luthiraa/Documents/korg2.4/arch-1/implementation/prompts/researcher.md",
+      "role_specialization": "researcher",
+      "checkpoint_name": "local-llama-server-qwen3-8b-gguf",
+      "temperature": 0.0,
+      "max_tokens": 400
+    },
+    "analyst": {
+      "system_prompt_path": "/Users/luthiraa/Documents/korg2.4/arch-1/implementation/prompts/analyst.md",
+      "role_specialization": "analyst",
+      "checkpoint_name": "local-llama-server-qwen3-8b-gguf",
+      "temperature": 0.0,
+      "max_tokens": 400
+    },
+    "critic": {
+      "system_prompt_path": "/Users/luthiraa/Documents/korg2.4/arch-1/implementation/prompts/critic.md",
+      "role_specialization": "critic",
+      "checkpoint_name": "local-llama-server-qwen3-8b-gguf",
+      "temperature": 0.0,
+      "max_tokens": 400
+    },
+    "coordinator_finalize": {
+      "system_prompt_path": "/Users/luthiraa/Documents/korg2.4/arch-1/implementation/prompts/coordinator_finalize.md",
+      "role_specialization": "coordinator",
+      "checkpoint_name": "local-llama-server-qwen3-8b-gguf",
+      "temperature": 0.0,
+      "max_tokens": 400
+    }
+  }
+}
