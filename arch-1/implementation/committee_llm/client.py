@@ -35,6 +35,7 @@ class OpenAICompatibleChatClient:
         messages: list[dict[str, str]],
         temperature: float,
         max_tokens: int,
+        extra_body: dict[str, Any] | None = None,
     ) -> ChatResult:
         payload = {
             "model": model,
@@ -42,6 +43,8 @@ class OpenAICompatibleChatClient:
             "temperature": temperature,
             "max_tokens": max_tokens,
         }
+        if extra_body:
+            payload.update(extra_body)
 
         body = json.dumps(payload).encode("utf-8")
         headers = {

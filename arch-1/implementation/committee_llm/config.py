@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 
 ROLE_SEQUENCE = (
@@ -159,6 +160,7 @@ class RoleConfig:
     model: str | None = None
     temperature: float | None = None
     max_tokens: int | None = None
+    extra_body: dict[str, Any] | None = None
     output_schema: tuple[str, ...] = ()
     local_context_view: tuple[str, ...] = ()
     role_specialization: str | None = None
@@ -247,7 +249,7 @@ class ExperimentConfig:
             source_path=source_path,
         )
 
-    def resolve_role_settings(self, role_name: str) -> dict[str, str | float | int]:
+    def resolve_role_settings(self, role_name: str) -> dict[str, str | float | int | dict[str, Any] | None]:
         role = self.roles[role_name]
         return {
             "model": role.model or self.defaults.model,
@@ -257,6 +259,7 @@ class ExperimentConfig:
             "max_tokens": role.max_tokens
             if role.max_tokens is not None
             else self.defaults.max_tokens,
+            "extra_body": role.extra_body,
         }
 
     def load_system_prompt(self, role_name: str) -> str:

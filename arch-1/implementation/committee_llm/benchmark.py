@@ -221,6 +221,26 @@ def _build_comparison(system_summaries: dict[str, dict[str, Any]]) -> dict[str, 
     return comparisons
 
 
+def _write_benchmark_summary(
+    *,
+    outdir: Path,
+    config: ExperimentConfig,
+    task_count: int,
+    system_summaries: dict[str, dict[str, Any]],
+) -> Path:
+    benchmark_summary = {
+        "config_name": config.name,
+        "config_path": str(config.source_path),
+        "task_count": task_count,
+        "paper_claim_blockers": config.paper_claim_blockers(),
+        "systems": system_summaries,
+        "comparison": _build_comparison(system_summaries),
+    }
+    summary_path = outdir / "summary.json"
+    _write_json(summary_path, benchmark_summary)
+    return summary_path
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run focused Architecture 1 benchmarks and matched baselines.")
     parser.add_argument("--config", required=True, help="Path to an experiment config JSON file.")
@@ -297,6 +317,20 @@ def main(argv: list[str] | None = None) -> int:
                 failures.append({"task_id": task_id, "error": str(exc)})
                 print(f"[{system_name} {index}/{len(tasks)}] failed {task_id}: {exc}", file=sys.stderr)
                 exit_code = 1
+                system_summaries[system_name] = _build_system_summary(
+                    system_name=system_name,
+                    completed_runs=completed_runs,
+                    failures=failures,
+                    started_at_utc=started_at_utc,
+                    wall_clock_elapsed_sec=time.perf_counter() - system_start,
+                )
+                summary_path = _write_benchmark_summary(
+                    outdir=outdir,
+                    config=config,
+                    task_count=len(tasks),
+                    system_summaries=system_summaries,
+                )
+                print(f"[{system_name} {index}/{len(tasks)}] checkpointed {summary_path}", file=sys.stderr)
                 if not args.continue_on_error:
                     break
                 continue
@@ -304,6 +338,21 @@ def main(argv: list[str] | None = None) -> int:
             _write_json(output_path, trace)
             completed_runs.append({"task_id": task_id, "output_path": output_path, "trace": trace})
             print(f"[{system_name} {index}/{len(tasks)}] wrote {output_path}", file=sys.stderr)
+
+            system_summaries[system_name] = _build_system_summary(
+                system_name=system_name,
+                completed_runs=completed_runs,
+                failures=failures,
+                started_at_utc=started_at_utc,
+                wall_clock_elapsed_sec=time.perf_counter() - system_start,
+            )
+            summary_path = _write_benchmark_summary(
+                outdir=outdir,
+                config=config,
+                task_count=len(tasks),
+                system_summaries=system_summaries,
+            )
+            print(f"[{system_name} {index}/{len(tasks)}] checkpointed {summary_path}", file=sys.stderr)
 
         system_summaries[system_name] = _build_system_summary(
             system_name=system_name,
@@ -313,16 +362,12 @@ def main(argv: list[str] | None = None) -> int:
             wall_clock_elapsed_sec=time.perf_counter() - system_start,
         )
 
-    benchmark_summary = {
-        "config_name": config.name,
-        "config_path": str(config.source_path),
-        "task_count": len(tasks),
-        "paper_claim_blockers": config.paper_claim_blockers(),
-        "systems": system_summaries,
-        "comparison": _build_comparison(system_summaries),
-    }
-    summary_path = outdir / "summary.json"
-    _write_json(summary_path, benchmark_summary)
+    summary_path = _write_benchmark_summary(
+        outdir=outdir,
+        config=config,
+        task_count=len(tasks),
+        system_summaries=system_summaries,
+    )
     print(f"wrote {summary_path}", file=sys.stderr)
 
     return exit_code

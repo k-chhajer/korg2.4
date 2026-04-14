@@ -279,6 +279,7 @@ class CommitteeRunner:
                 messages=messages,
                 temperature=float(role_settings["temperature"]),
                 max_tokens=int(role_settings["max_tokens"]),
+                extra_body=role_settings.get("extra_body"),
             )
 
             schema_validation = _schema_validity(result.content, self.config.get_role_schema(role_name))
@@ -292,6 +293,7 @@ class CommitteeRunner:
                     "model": result.model,
                     "temperature": role_settings["temperature"],
                     "max_tokens": role_settings["max_tokens"],
+                    "extra_body": role_settings.get("extra_body"),
                     "system_prompt": system_prompt,
                     "local_context_view": list(self.config.get_local_context_view(role_name)),
                     "output_schema": list(self.config.get_role_schema(role_name)),
