@@ -1,0 +1,87 @@
+{
+  "config_name": "qwen3_8b_committee_eval",
+  "config_path": "C:\\Dev\\grok_multiagent\\arch-1\\implementation\\configs\\qwen3_8b_committee_eval.json",
+  "task_count": 2,
+  "paper_claim_blockers": [
+    "Role specialization source is not set to post_trained_role_specialists, so this config should be treated as a prompt scaffold."
+  ],
+  "systems": {
+    "committee": {
+      "completed_count": 2,
+      "failed_count": 1,
+      "wall_clock_elapsed_sec": 5.0,
+      "aggregate": {
+        "mean_run_elapsed_sec": 2.5,
+        "tasks_per_sec": 0.4,
+        "model_call_count": 10,
+        "usage": {
+          "total_tokens": 200
+        },
+        "behavior_metrics": {
+          "decomposition_rate": 1.0
+        },
+        "reference_metrics": {
+          "overall": {
+            "answer_em": 0.5,
+            "answer_f1": 0.75
+          },
+          "by_benchmark": {
+            "hotpotqa_distractor": {
+              "count": 2,
+              "metrics": {
+                "answer_em": 0.5,
+                "answer_f1": 0.75
+              }
+            }
+          }
+        }
+      },
+      "failures": [
+        {
+          "task_id": "task-3",
+          "error": "backend timeout"
+        }
+      ]
+    },
+    "single_shot": {
+      "completed_count": 2,
+      "failed_count": 0,
+      "wall_clock_elapsed_sec": 3.0,
+      "aggregate": {
+        "mean_run_elapsed_sec": 1.5,
+        "tasks_per_sec": 0.6666667,
+        "model_call_count": 2,
+        "usage": {
+          "total_tokens": 80
+        },
+        "behavior_metrics": {},
+        "reference_metrics": {
+          "overall": {
+            "answer_em": 0.0,
+            "answer_f1": 0.25
+          },
+          "by_benchmark": {
+            "hotpotqa_distractor": {
+              "count": 2,
+              "metrics": {
+                "answer_em": 0.0,
+                "answer_f1": 0.25
+              }
+            }
+          }
+        }
+      },
+      "failures": []
+    }
+  },
+  "comparison": {
+    "committee_vs_single_shot": {
+      "latency_ratio": 1.6666667,
+      "token_ratio": 2.5,
+      "metric_deltas": {
+        "answer_em": 0.5,
+        "answer_f1": 0.5
+      }
+    }
+  }
+}

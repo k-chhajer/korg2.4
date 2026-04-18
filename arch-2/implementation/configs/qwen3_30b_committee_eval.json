@@ -1,0 +1,69 @@
+{
+  "name": "qwen3_30b_committee_eval",
+  "provider": {
+    "api_base": "http://localhost:8000/v1",
+    "api_key_env": "OPENAI_API_KEY",
+    "timeout_sec": 240
+  },
+  "defaults": {
+    "model": "Qwen/Qwen3-30B-A3B-Instruct",
+    "temperature": 0.0,
+    "max_tokens": 1600
+  },
+  "architecture": {
+    "family": "architecture_1",
+    "description": "Architecture 1 evaluation scaffold on Qwen3-30B with fixed coordinator -> researcher -> analyst -> critic -> coordinator flow.",
+    "specialization_source": "prompt_scaffold_only",
+    "stage_sequence": [
+      "coordinator_plan",
+      "researcher",
+      "analyst",
+      "critic",
+      "coordinator_finalize"
+    ],
+    "paper_reference_role_order": [
+      "coordinator",
+      "researcher",
+      "analyst",
+      "critic",
+      "coordinator"
+    ]
+  },
+  "roles": {
+    "coordinator_plan": {
+      "system_prompt_path": "../prompts/coordinator_plan.md",
+      "role_specialization": "coordinator",
+      "checkpoint_name": "qwen3-30b-instruct-dev-scaffold",
+      "temperature": 0.0,
+      "max_tokens": 1400
+    },
+    "researcher": {
+      "system_prompt_path": "../prompts/researcher.md",
+      "role_specialization": "researcher",
+      "checkpoint_name": "qwen3-30b-instruct-dev-scaffold",
+      "temperature": 0.0,
+      "max_tokens": 1800
+    },
+    "analyst": {
+      "system_prompt_path": "../prompts/analyst.md",
+      "role_specialization": "analyst",
+      "checkpoint_name": "qwen3-30b-instruct-dev-scaffold",
+      "temperature": 0.0,
+      "max_tokens": 1600
+    },
+    "critic": {
+      "system_prompt_path": "../prompts/critic.md",
+      "role_specialization": "critic",
+      "checkpoint_name": "qwen3-30b-instruct-dev-scaffold",
+      "temperature": 0.0,
+      "max_tokens": 1400
+    },
+    "coordinator_finalize": {
+      "system_prompt_path": "../prompts/coordinator_finalize.md",
+      "role_specialization": "coordinator",
+      "checkpoint_name": "qwen3-30b-instruct-dev-scaffold",
+      "temperature": 0.0,
+      "max_tokens": 1600
+    }
+  }
+}

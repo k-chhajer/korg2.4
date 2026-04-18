@@ -8,6 +8,7 @@ Read these in order:
 - [BENCHMARKS.md](C:/Users/luthi/Documents/korg/korg2_4_remote/arch-1/docs/BENCHMARKS.md)
 - [REMOTE_EVAL_PLAN.md](C:/Users/luthi/Documents/korg/korg2_4_remote/arch-1/docs/REMOTE_EVAL_PLAN.md)
 - [BENCHMARK_RESULTS.md](C:/Users/luthi/Documents/korg/korg2_4_remote/arch-1/docs/BENCHMARK_RESULTS.md)
+- [COLAB_T4_ARCH2_CONTROLLER_TRAINING.md](C:/Users/luthi/Documents/korg/korg2_4_remote/arch-1/docs/COLAB_T4_ARCH2_CONTROLLER_TRAINING.md)
 
 Implementation entry points:
 
