@@ -199,12 +199,12 @@ class ExperimentConfig:
         stage_sequence = tuple(architecture_raw.get("stage_sequence") or ROLE_SEQUENCE)
         if stage_sequence != ROLE_SEQUENCE:
             raise ValueError(
-                "Architecture 1 requires the fixed stage sequence "
+                "Architecture 2 requires the fixed stage sequence "
                 "'coordinator_plan -> researcher -> analyst -> critic -> coordinator_finalize'."
             )
 
         architecture = ArchitectureSpec(
-            family=str(architecture_raw.get("family") or "architecture_1"),
+            family=str(architecture_raw.get("family") or "architecture_2"),
             description=str(
                 architecture_raw.get("description")
                 or "Role-specialized committee with a fixed coordinator->researcher->analyst->critic->coordinator flow."
@@ -283,14 +283,14 @@ class ExperimentConfig:
     def paper_claim_blockers(self) -> list[str]:
         blockers: list[str] = []
 
-        if self.architecture.family != "architecture_1":
-            blockers.append("Config is not marked as Architecture 1.")
+        if self.architecture.family != "architecture_2":
+            blockers.append("Config is not marked as Architecture 2.")
 
         if self.architecture.paper_reference_role_order != BASE_ROLE_ORDER:
             blockers.append("Paper reference role order does not match coordinator->researcher->analyst->critic->coordinator.")
 
         if self.architecture.stage_sequence != ROLE_SEQUENCE:
-            blockers.append("Stage sequence does not match the fixed Architecture 1 topology.")
+            blockers.append("Stage sequence does not match the fixed Architecture 2 topology.")
 
         if self.architecture.specialization_source != "post_trained_role_specialists":
             blockers.append(
@@ -311,7 +311,7 @@ class ExperimentConfig:
                     blockers.append(f"Role '{role_name}' is missing a role-specific checkpoint_name.")
                 elif role.checkpoint_name in seen_checkpoints:
                     blockers.append(
-                        f"Checkpoint '{role.checkpoint_name}' is reused across roles; Architecture 1 requires role-specific post-training."
+                        f"Checkpoint '{role.checkpoint_name}' is reused across roles; Architecture 2 requires role-specific post-training."
                     )
                 else:
                     seen_checkpoints.add(role.checkpoint_name)

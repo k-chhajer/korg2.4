@@ -242,7 +242,9 @@ def _write_benchmark_summary(
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run focused Architecture 1 benchmarks and matched baselines.")
+    parser = argparse.ArgumentParser(
+        description="Run focused Architecture 2 benchmarks - frozen specialist committee with learned controller"
+    )
     parser.add_argument("--config", required=True, help="Path to an experiment config JSON file.")
     parser.add_argument("--tasks", required=True, help="Path to converted benchmark task JSONL.")
     parser.add_argument("--outdir", default="runs/benchmark", help="Output directory for benchmark traces.")

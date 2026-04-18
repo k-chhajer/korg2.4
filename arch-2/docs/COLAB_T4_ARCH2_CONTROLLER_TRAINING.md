@@ -4,8 +4,9 @@ This runbook trains Architecture 2 only, inside `arch-2/`.
 
 Training target:
 
-- train only the controller policy/value network
+- train only the reasoning-aware controller (GRU + phase probe)
 - keep specialist LLM calls frozen and served through OpenRouter (`qwen/qwen3-8b`)
+- optimize with GRPO using verifiable reward (RLVR)
 
 Persist outputs to Google Drive:
 
@@ -14,6 +15,7 @@ Persist outputs to Google Drive:
 - `train_log.jsonl`
 - `eval_log.jsonl`
 - `train_config.json`
+- `run_rollouts.json`
 
 ## 1) Mount Drive
 
@@ -82,6 +84,10 @@ print(OUTDIR)
   --eval-every 10 \
   --save-every 5 \
   --eval-task-count 24 \
+  --grpo-group-size 4 \
+  --phase-loss-weight 0.1 \
+  --entropy-coef 0.01 \
+  --cheap-model anthropic/claude-haiku-4-5-20251001 \
   --budget-tokens 16000 \
   --max-decisions 6 \
   --max-restarts 1 \
@@ -101,6 +107,10 @@ print(OUTDIR)
   --eval-every 10 \
   --save-every 5 \
   --eval-task-count 24 \
+  --grpo-group-size 4 \
+  --phase-loss-weight 0.1 \
+  --entropy-coef 0.01 \
+  --cheap-model anthropic/claude-haiku-4-5-20251001 \
   --budget-tokens 16000 \
   --max-decisions 6 \
   --max-restarts 1 \
@@ -109,7 +119,31 @@ print(OUTDIR)
   --resume "$OUTDIR/checkpoint_last.pt"
 ```
 
-## 9) Evaluate Best Checkpoint
+## 9) (Optional) Warmstart Heuristic Smoke Check
+
+```bash
+%cd /content/grok_multiagent/arch-2/implementation
+!python3.11 -m committee_llm.train_controller \
+  --config /content/grok_multiagent/arch-2/implementation/configs/qwen3_8b_openrouter_arch2_controller.json \
+  --tasks /content/grok_multiagent/arch-2/evals/data/benchmarks/hotpotqa_dev.jsonl \
+  --outdir "$OUTDIR" \
+  --episodes 1 \
+  --eval-every 1 \
+  --save-every 1 \
+  --eval-task-count 4 \
+  --grpo-group-size 2 \
+  --phase-loss-weight 0.1 \
+  --entropy-coef 0.01 \
+  --cheap-model anthropic/claude-haiku-4-5-20251001 \
+  --budget-tokens 16000 \
+  --max-decisions 6 \
+  --max-restarts 1 \
+  --per-role-call-cap 2 \
+  --device cuda \
+  --warmstart-heuristic
+```
+
+## 10) Evaluate Best Checkpoint
 
 ```bash
 %cd /content/grok_multiagent/arch-2/implementation
@@ -118,15 +152,33 @@ print(OUTDIR)
   --tasks /content/grok_multiagent/arch-2/evals/data/benchmarks/hotpotqa_dev.jsonl \
   --outdir "$OUTDIR" \
   --eval-task-count 24 \
+  --grpo-group-size 4 \
+  --phase-loss-weight 0.1 \
+  --entropy-coef 0.01 \
+  --cheap-model anthropic/claude-haiku-4-5-20251001 \
+  --budget-tokens 16000 \
+  --max-decisions 6 \
+  --max-restarts 1 \
+  --per-role-call-cap 2 \
   --device cuda \
   --resume "$OUTDIR/checkpoint_best.pt" \
   --evaluate-only
 ```
 
-## 10) Check Progress
+## 11) Check Progress
 
 ```bash
 !ls -lah "$OUTDIR"
 !tail -n 5 "$OUTDIR/train_log.jsonl"
 !tail -n 5 "$OUTDIR/eval_log.jsonl"
+!tail -n 20 "$OUTDIR/train_log.jsonl"
 ```
+
+`train_log.jsonl` now includes Arch2 reasoning-aware signals:
+
+- `phase_sequence`
+- `phase_loss`
+- `grpo_advantages`
+- `group_rewards`
+- `group_reward_mean`
+- `group_reward_std`

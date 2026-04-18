@@ -5,8 +5,10 @@ This folder is fully separate from `arch-1` and is the only place you need for A
 Core idea:
 
 - frozen specialist committee (coordinator/researcher/analyst/critic)
-- learned controller decides which specialist to call next under a token budget
-- only the controller is trained
+- reasoning-aware learned controller decides which specialist to call next under a token budget
+- controller uses a GRU hidden state + phase classifier
+- training uses GRPO with verifiable reward (RLVR)
+- only the controller is trained; specialist prompts/models remain frozen
 
 Use these paths:
 
@@ -32,9 +34,22 @@ OPENROUTER_API_KEY=your_key_here python3.11 -m committee_llm.train_controller \
   --eval-every 10 \
   --save-every 5 \
   --eval-task-count 24 \
+  --grpo-group-size 4 \
+  --phase-loss-weight 0.1 \
+  --entropy-coef 0.01 \
+  --cheap-model anthropic/claude-haiku-4-5-20251001 \
   --budget-tokens 16000 \
   --max-decisions 6 \
   --max-restarts 1 \
   --per-role-call-cap 2 \
   --device cuda
 ```
+
+Artifacts produced in `--outdir`:
+
+- `checkpoint_last.pt`
+- `checkpoint_best.pt`
+- `train_log.jsonl` (includes `phase_sequence`, `phase_loss`, GRPO group stats)
+- `eval_log.jsonl` (includes phase/action sequence summaries)
+- `train_config.json`
+- `run_rollouts.json`

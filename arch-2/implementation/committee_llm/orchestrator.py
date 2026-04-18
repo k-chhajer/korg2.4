@@ -320,7 +320,7 @@ class CommitteeRunner:
 
         return {
             "run_id": run_id,
-            "architecture": "architecture_1_posttrained_committee",
+            "architecture": "Architecture 2: frozen specialist committee + learned controller",
             "architecture_spec": {
                 "family": self.config.architecture.family,
                 "description": self.config.architecture.description,

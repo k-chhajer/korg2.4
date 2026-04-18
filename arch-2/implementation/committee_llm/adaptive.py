@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import random
+import re
+import string
 import time
 from typing import Any
 
@@ -45,10 +47,122 @@ ACTION_NAMES = (
 )
 
 
+REASONING_PHASES = [
+    "decomposing",
+    "hypothesizing",
+    "conflicting",
+    "converging",
+    "verifying",
+    "stuck",
+]
+
+PHASE_TO_IDX = {phase: index for index, phase in enumerate(REASONING_PHASES)}
+N_PHASES = len(REASONING_PHASES)
+
+
 def action_name(action_index: int) -> str:
     if 0 <= action_index < len(ACTION_NAMES):
         return ACTION_NAMES[action_index]
     return f"unknown_{action_index}"
+
+
+def _normalize_answer(text: str) -> str:
+    normalized = text.lower()
+    normalized = normalized.translate(str.maketrans("", "", string.punctuation))
+    normalized = " ".join(normalized.split())
+    return normalized
+
+
+def _token_f1(pred: str, gold: str) -> float:
+    pred_tokens = pred.split()
+    gold_tokens = gold.split()
+
+    if not pred_tokens and not gold_tokens:
+        return 1.0
+    if not pred_tokens or not gold_tokens:
+        return 0.0
+
+    common = set(pred_tokens) & set(gold_tokens)
+    if not common:
+        return 0.0
+
+    precision = sum(pred_tokens.count(token) for token in common) / len(pred_tokens)
+    recall = sum(gold_tokens.count(token) for token in common) / len(gold_tokens)
+    if precision + recall == 0:
+        return 0.0
+    return 2 * precision * recall / (precision + recall)
+
+
+def compute_verifiable_reward(
+    predicted_answer: str,
+    gold_answer: str | list[str],
+    task_type: str,
+) -> float:
+    """
+    RLVR reward: binary/F1 from ground truth only.
+    No shaped components. No LLM judge.
+    """
+    pred = _normalize_answer(predicted_answer)
+    normalized_task_type = task_type.strip().lower()
+
+    if normalized_task_type in {"gpqa", "arc"}:
+        gold_raw = gold_answer if isinstance(gold_answer, str) else (gold_answer[0] if gold_answer else "")
+        gold = _normalize_answer(gold_raw)
+        pred_letter = re.search(r"\b([a-d])\b", pred)
+        gold_letter = re.search(r"\b([a-d])\b", gold)
+        if pred_letter and gold_letter:
+            return 1.0 if pred_letter.group(1).upper() == gold_letter.group(1).upper() else 0.0
+        return 1.0 if pred == gold else 0.0
+
+    gold_list = gold_answer if isinstance(gold_answer, list) else [gold_answer]
+    candidates = [candidate for candidate in gold_list if isinstance(candidate, str)]
+    if not candidates:
+        return 0.0
+    best_f1 = max(_token_f1(pred, _normalize_answer(candidate)) for candidate in candidates)
+    return best_f1 if best_f1 > 0.6 else best_f1 * 0.5
+
+
+def classify_reasoning_phase(
+    transcript: list[dict[str, str]],
+    client: OpenAICompatibleChatClient,
+    cheap_model: str,
+) -> int:
+    """Returns phase index. Falls back to 'hypothesizing' (index 1) on failure."""
+    recent = transcript[-3:] if len(transcript) >= 3 else transcript
+    transcript_text = "\n".join(
+        f"{turn.get('role', 'unknown').upper()}: {str(turn.get('content', ''))[:200]}" for turn in recent
+    )
+
+    prompt = f"""You are analyzing a multi-agent reasoning debate.
+
+Current debate transcript (recent turns):
+{transcript_text}
+
+Classify the current reasoning phase as exactly one of:
+- decomposing: agents are breaking down the question
+- hypothesizing: candidate answers are being proposed
+- conflicting: agents disagree, competing answers exist
+- converging: agreement is emerging
+- verifying: checking/stress-testing the leading answer
+- stuck: circular or repetitive, no new information
+
+Respond with ONLY the phase word, nothing else."""
+
+    try:
+        result = client.chat(
+            model=cheap_model,
+            messages=[
+                {"role": "system", "content": "You classify reasoning phases."},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.0,
+            max_tokens=10,
+        )
+        phase_word = result.content.strip().lower().split()[0] if result.content.strip() else "hypothesizing"
+        phase_word = re.sub(r"[^a-z]", "", phase_word)
+        return PHASE_TO_IDX.get(phase_word, 1)
+    except Exception:
+        return 1
 
 
 def _usage_total_tokens(usage: dict[str, Any] | None, text: str) -> int:
@@ -58,7 +172,6 @@ def _usage_total_tokens(usage: dict[str, Any] | None, text: str) -> int:
             return max(0, value)
         if isinstance(value, float):
             return max(0, int(value))
-    # Very rough fallback when backend omits usage
     return max(1, int(len(text.split()) * 1.5))
 
 
@@ -81,6 +194,34 @@ def _quality_score(evaluation: dict[str, Any]) -> float:
     return 0.5 * em + 0.5 * f1
 
 
+def _infer_reward_task_type(task: TaskSpec) -> str:
+    benchmark_name = (task.benchmark_name or "").strip().lower()
+    if "gpqa" in benchmark_name:
+        return "gpqa"
+    if "arc" in benchmark_name:
+        return "arc"
+    if "musique" in benchmark_name:
+        return "musique"
+    if "hotpot" in benchmark_name:
+        return "hotpotqa"
+    if task.task_type == "multiple_choice":
+        return "gpqa"
+    return "hotpotqa"
+
+
+def _extract_gold_answer(task: TaskSpec, task_type: str) -> str | list[str]:
+    if task_type in {"gpqa", "arc"}:
+        if task.correct_choice:
+            return task.correct_choice
+        if task.reference_answers:
+            return task.reference_answers[0]
+        return ""
+
+    if task.reference_answers:
+        return list(task.reference_answers)
+    return ""
+
+
 @dataclass(slots=True)
 class AdaptiveRuntimeConfig:
     budget_tokens: int = 16000
@@ -89,19 +230,14 @@ class AdaptiveRuntimeConfig:
     per_role_call_cap: int = 2
     min_tokens_for_call: int = 300
     max_backend_retries: int = 2
+    cheap_model: str = "anthropic/claude-haiku-4-5-20251001"
 
 
 @dataclass(slots=True)
 class RewardConfig:
-    token_step_penalty: float = 0.02
-    latency_step_penalty: float = 0.01
-    restart_penalty: float = 0.03
-    invalid_schema_penalty: float = 0.02
-    stop_without_finalize_penalty: float = 0.08
-    no_answer_penalty: float = 0.20
-    terminal_quality_weight: float = 1.0
-    terminal_token_penalty: float = 0.20
-    terminal_latency_penalty: float = 0.02
+    reward_type: str = "verifiable"
+    hotpotqa_f1_threshold: float = 0.6
+    gpqa_match: str = "letter_exact"
 
 
 @dataclass(slots=True)
@@ -111,6 +247,9 @@ class PolicyDecision:
     value: Any | None = None
     entropy: Any | None = None
     probs: list[float] | None = None
+    action_logits: Any | None = None
+    phase_logits: Any | None = None
+    phase_label: int | None = None
 
 
 @dataclass(slots=True)
@@ -119,6 +258,9 @@ class RolloutTransition:
     value: Any | None
     entropy: Any | None
     reward: float
+    action_logits: Any | None = None
+    phase_logits: Any | None = None
+    phase_label: Any | None = None
 
 
 @dataclass(slots=True)
@@ -132,6 +274,9 @@ class AdaptiveRollout:
 class ControllerPolicy:
     name = "controller_policy"
 
+    def start_episode(self) -> None:
+        return None
+
     def select_action(
         self,
         state_vector: list[float],
@@ -139,6 +284,7 @@ class ControllerPolicy:
         *,
         deterministic: bool,
         track_grad: bool,
+        phase_idx: int | None = None,
     ) -> PolicyDecision:
         raise NotImplementedError
 
@@ -156,12 +302,12 @@ class RandomControllerPolicy(ControllerPolicy):
         *,
         deterministic: bool,
         track_grad: bool,
+        phase_idx: int | None = None,
     ) -> PolicyDecision:
-        del state_vector, deterministic, track_grad
+        del state_vector, deterministic, track_grad, phase_idx
         allowed = [index for index, allowed_flag in enumerate(action_mask) if allowed_flag]
         if not allowed:
             return PolicyDecision(action=ACTION_STOP)
-        # Mildly prefer non-stop actions unless stop is the only available option.
         non_stop = [index for index in allowed if index != ACTION_STOP]
         action = self._rng.choice(non_stop if non_stop else allowed)
         return PolicyDecision(action=action)
@@ -177,16 +323,15 @@ class HeuristicControllerPolicy(ControllerPolicy):
         *,
         deterministic: bool,
         track_grad: bool,
+        phase_idx: int | None = None,
     ) -> PolicyDecision:
-        del deterministic, track_grad
-        # State layout is defined in AdaptiveCommitteeRunner._state_vector.
+        del deterministic, track_grad, phase_idx
         remaining_budget = state_vector[1]
         has_research = state_vector[4] > 0.0
         has_analyst = state_vector[5] > 0.0
         has_critic = state_vector[6] > 0.0
         decisions_used = state_vector[0]
 
-        preferred = []
         if not has_research:
             preferred = [ACTION_CALL_RESEARCHER]
         elif not has_analyst:
@@ -235,6 +380,16 @@ if nn is not None:
             self.model = model
             self.device = torch.device(device)
             self.model.to(self.device)
+            self._hidden_state: Any | None = None
+
+        def start_episode(self) -> None:
+            if hasattr(self.model, "initial_hidden"):
+                hidden = self.model.initial_hidden(batch_size=1)
+                if hasattr(hidden, "to"):
+                    hidden = hidden.to(self.device)
+                self._hidden_state = hidden
+            else:
+                self._hidden_state = None
 
         def select_action(
             self,
@@ -243,29 +398,37 @@ if nn is not None:
             *,
             deterministic: bool,
             track_grad: bool,
+            phase_idx: int | None = None,
         ) -> PolicyDecision:
             if not any(action_mask):
                 return PolicyDecision(action=ACTION_STOP)
 
-            if track_grad:
-                context = torch.enable_grad()
-            else:
-                context = torch.no_grad()
-
+            context = torch.enable_grad() if track_grad else torch.no_grad()
             with context:
                 state_tensor = torch.tensor([state_vector], dtype=torch.float32, device=self.device)
-                logits, values = self.model(state_tensor)
-                masked_logits = logits.clone()
+                phase_label = 1 if phase_idx is None else int(phase_idx)
+                phase_label = max(0, min(N_PHASES - 1, phase_label))
+
+                if hasattr(self.model, "initial_hidden"):
+                    if self._hidden_state is None:
+                        self.start_episode()
+                    phase_onehot = torch.zeros((1, N_PHASES), dtype=torch.float32, device=self.device)
+                    phase_onehot[0, phase_label] = 1.0
+                    action_logits, values, hidden_next, phase_logits = self.model(
+                        state_tensor, phase_onehot, self._hidden_state
+                    )
+                    self._hidden_state = hidden_next if track_grad else hidden_next.detach()
+                else:
+                    action_logits, values = self.model(state_tensor)
+                    phase_logits = None
+
+                masked_logits = action_logits.clone()
                 for action_index, allowed in enumerate(action_mask):
                     if not allowed:
                         masked_logits[0, action_index] = -1e9
+
                 distribution = Categorical(logits=masked_logits)
-
-                if deterministic:
-                    action_tensor = torch.argmax(masked_logits, dim=-1)
-                else:
-                    action_tensor = distribution.sample()
-
+                action_tensor = torch.argmax(masked_logits, dim=-1) if deterministic else distribution.sample()
                 log_prob = distribution.log_prob(action_tensor)
                 entropy = distribution.entropy()
                 probs = torch.softmax(masked_logits, dim=-1).detach().cpu()[0].tolist()
@@ -276,6 +439,9 @@ if nn is not None:
                 value=values if track_grad else values.detach(),
                 entropy=entropy if track_grad else entropy.detach(),
                 probs=[float(item) for item in probs],
+                action_logits=masked_logits if track_grad else masked_logits.detach(),
+                phase_logits=phase_logits if track_grad else (phase_logits.detach() if phase_logits is not None else None),
+                phase_label=phase_label,
             )
 else:
     class TorchControllerModel:  # pragma: no cover - executed only when torch missing
@@ -296,8 +462,9 @@ else:
             *,
             deterministic: bool,
             track_grad: bool,
+            phase_idx: int | None = None,
         ) -> PolicyDecision:
-            del state_vector, action_mask, deterministic, track_grad
+            del state_vector, action_mask, deterministic, track_grad, phase_idx
             raise RuntimeError("Torch is required for TorchControllerPolicy.")
 
 
@@ -342,31 +509,31 @@ class AdaptiveCommitteeRunner:
         bench_gpqa = 1.0 if "gpqa" in benchmark_name else 0.0
 
         vector = [
-            float(decision_index) / float(max_decisions),  # 0
-            max(0.0, min(1.0, float(remaining_budget) / float(budget))),  # 1
-            max(0.0, min(2.0, float(used_tokens) / float(budget))),  # 2
-            1.0 if "coordinator_plan" in schema_validity else 0.0,  # 3
-            1.0 if call_counts["researcher"] > 0 else 0.0,  # 4
-            1.0 if call_counts["analyst"] > 0 else 0.0,  # 5
-            1.0 if call_counts["critic"] > 0 else 0.0,  # 6
-            1.0 if call_counts["coordinator_finalize"] > 0 else 0.0,  # 7
-            float(call_counts["researcher"]) / float(cap),  # 8
-            float(call_counts["analyst"]) / float(cap),  # 9
-            float(call_counts["critic"]) / float(cap),  # 10
-            float(call_counts["coordinator_plan"]) / float(max(1, self.runtime.max_restarts + 1)),  # 11
-            1.0 if schema_validity.get("coordinator_plan") else 0.0,  # 12
-            1.0 if schema_validity.get("researcher") else 0.0,  # 13
-            1.0 if schema_validity.get("analyst") else 0.0,  # 14
-            1.0 if schema_validity.get("critic") else 0.0,  # 15
-            1.0 if schema_validity.get("coordinator_finalize") else 0.0,  # 16
-            task_type_open,  # 17
-            task_type_mcq,  # 18
-            bench_hotpot,  # 19
-            bench_musique,  # 20
-            bench_gpqa,  # 21
+            float(decision_index) / float(max_decisions),
+            max(0.0, min(1.0, float(remaining_budget) / float(budget))),
+            max(0.0, min(2.0, float(used_tokens) / float(budget))),
+            1.0 if "coordinator_plan" in schema_validity else 0.0,
+            1.0 if call_counts["researcher"] > 0 else 0.0,
+            1.0 if call_counts["analyst"] > 0 else 0.0,
+            1.0 if call_counts["critic"] > 0 else 0.0,
+            1.0 if call_counts["coordinator_finalize"] > 0 else 0.0,
+            float(call_counts["researcher"]) / float(cap),
+            float(call_counts["analyst"]) / float(cap),
+            float(call_counts["critic"]) / float(cap),
+            float(call_counts["coordinator_plan"]) / float(max(1, self.runtime.max_restarts + 1)),
+            1.0 if schema_validity.get("coordinator_plan") else 0.0,
+            1.0 if schema_validity.get("researcher") else 0.0,
+            1.0 if schema_validity.get("analyst") else 0.0,
+            1.0 if schema_validity.get("critic") else 0.0,
+            1.0 if schema_validity.get("coordinator_finalize") else 0.0,
+            task_type_open,
+            task_type_mcq,
+            bench_hotpot,
+            bench_musique,
+            bench_gpqa,
         ]
         for action_index in range(len(ACTION_NAMES)):
-            vector.append(1.0 if last_action == action_index else 0.0)  # 22-27
+            vector.append(1.0 if last_action == action_index else 0.0)
         return vector
 
     def _action_mask(
@@ -525,7 +692,9 @@ class AdaptiveCommitteeRunner:
         decision_index = 0
         last_action: int | None = None
 
-        # Initial mandatory plan call for a stable starting state.
+        if hasattr(policy, "start_episode"):
+            policy.start_episode()
+
         plan_step, plan_schema = self._call_role(role_name="coordinator_plan", task=task, stage_outputs=stage_outputs)
         stage_outputs["coordinator_plan"] = plan_step["response"]
         stage_schemas["coordinator_plan"] = plan_schema
@@ -553,11 +722,22 @@ class AdaptiveCommitteeRunner:
                 last_action=last_action,
             )
 
+            transcript = [
+                {"role": str(step.get("role", "")), "content": str(step.get("response", ""))}
+                for step in steps
+            ]
+            phase_idx = classify_reasoning_phase(
+                transcript=transcript,
+                client=self.client,
+                cheap_model=self.runtime.cheap_model,
+            )
+
             decision = policy.select_action(
                 state_vector=state_vector,
                 action_mask=action_mask,
                 deterministic=deterministic,
                 track_grad=track_grad,
+                phase_idx=phase_idx,
             )
             selected_action = decision.action
             invalid_action = not (0 <= selected_action < len(action_mask)) or not action_mask[selected_action]
@@ -572,8 +752,6 @@ class AdaptiveCommitteeRunner:
 
             if selected_action == ACTION_STOP:
                 done = True
-                if call_counts["coordinator_finalize"] == 0:
-                    step_reward -= self.reward.stop_without_finalize_penalty
             elif selected_action == ACTION_RESTART_FROM_PLAN:
                 restart_count += 1
                 role_called = "coordinator_plan"
@@ -581,7 +759,6 @@ class AdaptiveCommitteeRunner:
                     role_name="coordinator_plan", task=task, stage_outputs=stage_outputs
                 )
                 stage_outputs["coordinator_plan"] = restart_step["response"]
-                # Clear downstream outputs when plan restarts.
                 for key in ("researcher", "analyst", "critic", "coordinator_finalize"):
                     stage_outputs.pop(key, None)
                     stage_schemas.pop(key, None)
@@ -594,7 +771,6 @@ class AdaptiveCommitteeRunner:
                 tokens_spent = _usage_total_tokens(restart_step.get("usage"), restart_step.get("response", ""))
                 latency_spent = float(restart_step.get("elapsed_sec", 0.0))
                 schema_valid = bool(restart_schema["is_valid"])
-                step_reward -= self.reward.restart_penalty
             else:
                 role_map = {
                     ACTION_CALL_RESEARCHER: "researcher",
@@ -619,21 +795,16 @@ class AdaptiveCommitteeRunner:
                 if selected_action == ACTION_CALL_FINALIZE:
                     done = True
 
-            if tokens_spent > 0:
-                step_reward -= self.reward.token_step_penalty * (
-                    float(tokens_spent) / float(max(1, self.runtime.budget_tokens))
-                )
-            if latency_spent > 0:
-                step_reward -= self.reward.latency_step_penalty * (latency_spent / 60.0)
-            if schema_valid is False:
-                step_reward -= self.reward.invalid_schema_penalty
-            if invalid_action:
-                step_reward -= self.reward.invalid_schema_penalty
-
             used_tokens += tokens_spent
             remaining_budget = self.runtime.budget_tokens - used_tokens
             if remaining_budget <= 0:
                 done = True
+
+            phase_label_tensor = None
+            if decision.phase_label is not None and torch is not None:
+                phase_label_tensor = torch.tensor([int(decision.phase_label)], dtype=torch.long)
+                if track_grad and hasattr(decision.action_logits, "device"):
+                    phase_label_tensor = phase_label_tensor.to(decision.action_logits.device)
 
             transitions.append(
                 RolloutTransition(
@@ -641,6 +812,9 @@ class AdaptiveCommitteeRunner:
                     value=decision.value,
                     entropy=decision.entropy,
                     reward=step_reward,
+                    action_logits=decision.action_logits,
+                    phase_logits=decision.phase_logits,
+                    phase_label=phase_label_tensor,
                 )
             )
             controller_events.append(
@@ -656,6 +830,8 @@ class AdaptiveCommitteeRunner:
                     "tokens_spent": tokens_spent,
                     "latency_spent_sec": latency_spent,
                     "remaining_budget_tokens": max(0, remaining_budget),
+                    "phase_idx": phase_idx,
+                    "phase_label": REASONING_PHASES[phase_idx],
                     "log_prob": float(decision.log_prob.detach().cpu().item())
                     if hasattr(decision.log_prob, "detach")
                     else (float(decision.log_prob) if decision.log_prob is not None else None),
@@ -677,15 +853,16 @@ class AdaptiveCommitteeRunner:
         quality = _quality_score(evaluation)
         elapsed_sec = time.perf_counter() - run_start
 
-        terminal_reward = self.reward.terminal_quality_weight * quality
-        terminal_reward -= self.reward.terminal_token_penalty * (
-            float(used_tokens) / float(max(1, self.runtime.budget_tokens))
+        reward_task_type = _infer_reward_task_type(task)
+        gold_answer = _extract_gold_answer(task, reward_task_type)
+        verifiable_reward = compute_verifiable_reward(
+            predicted_answer=final_answer,
+            gold_answer=gold_answer,
+            task_type=reward_task_type,
         )
-        terminal_reward -= self.reward.terminal_latency_penalty * (elapsed_sec / 60.0)
-        if not final_answer.strip():
-            terminal_reward -= self.reward.no_answer_penalty
+
         if transitions:
-            transitions[-1].reward += terminal_reward
+            transitions[-1].reward += verifiable_reward
 
         summary = _build_trace_summary(steps)
         summary["behavior_metrics"] = _behavior_metrics(task, stage_outputs, stage_schemas)
@@ -709,17 +886,12 @@ class AdaptiveCommitteeRunner:
                     "max_restarts": self.runtime.max_restarts,
                     "per_role_call_cap": self.runtime.per_role_call_cap,
                     "min_tokens_for_call": self.runtime.min_tokens_for_call,
+                    "cheap_model": self.runtime.cheap_model,
                 },
                 "reward": {
-                    "token_step_penalty": self.reward.token_step_penalty,
-                    "latency_step_penalty": self.reward.latency_step_penalty,
-                    "restart_penalty": self.reward.restart_penalty,
-                    "invalid_schema_penalty": self.reward.invalid_schema_penalty,
-                    "stop_without_finalize_penalty": self.reward.stop_without_finalize_penalty,
-                    "no_answer_penalty": self.reward.no_answer_penalty,
-                    "terminal_quality_weight": self.reward.terminal_quality_weight,
-                    "terminal_token_penalty": self.reward.terminal_token_penalty,
-                    "terminal_latency_penalty": self.reward.terminal_latency_penalty,
+                    "type": self.reward.reward_type,
+                    "hotpotqa_f1_threshold": self.reward.hotpotqa_f1_threshold,
+                    "gpqa_match": self.reward.gpqa_match,
                 },
             },
             "config_name": self.config.name,
@@ -736,6 +908,8 @@ class AdaptiveCommitteeRunner:
                 "restart_count": restart_count,
                 "used_tokens": used_tokens,
                 "remaining_budget_tokens": max(0, remaining_budget),
+                "action_sequence": [event["selected_action_name"] for event in controller_events],
+                "phase_sequence": [event["phase_label"] for event in controller_events],
             },
             "final_stage": final_stage,
             "final_answer": final_answer,
@@ -748,5 +922,5 @@ class AdaptiveCommitteeRunner:
             trace=trace,
             transitions=transitions,
             total_reward=float(total_reward),
-            quality_score=float(quality),
+            quality_score=float(verifiable_reward if verifiable_reward is not None else quality),
         )

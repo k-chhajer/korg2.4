@@ -20,6 +20,10 @@ OPENROUTER_API_KEY=your_key_here python3.11 -m committee_llm.train_controller \
   --eval-every 10 \
   --save-every 5 \
   --eval-task-count 24 \
+  --grpo-group-size 4 \
+  --phase-loss-weight 0.1 \
+  --entropy-coef 0.01 \
+  --cheap-model anthropic/claude-haiku-4-5-20251001 \
   --budget-tokens 16000 \
   --max-decisions 6 \
   --max-restarts 1 \

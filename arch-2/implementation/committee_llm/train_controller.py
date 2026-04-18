@@ -4,15 +4,18 @@ import argparse
 import json
 import random
 from pathlib import Path
+from statistics import mean, pstdev
 from typing import Any
 
 from committee_llm.adaptive import (
+    ACTION_NAMES,
     AdaptiveCommitteeRunner,
     AdaptiveRuntimeConfig,
     HeuristicControllerPolicy,
+    N_PHASES,
+    REASONING_PHASES,
     RewardConfig,
     TaskSpec,
-    TorchControllerModel,
     TorchControllerPolicy,
 )
 from committee_llm.client import OpenAICompatibleChatClient
@@ -20,11 +23,50 @@ from committee_llm.config import ExperimentConfig
 
 try:
     import torch
-    import torch.nn.functional as F
+    import torch.nn as nn
 except Exception as exc:  # pragma: no cover - depends on runtime
     raise RuntimeError(
         "Torch is required for controller training. Install it in Colab with `pip install torch`."
     ) from exc
+
+
+class ReasoningAwareController(nn.Module):
+    """
+    Controller with a GRU hidden state that tracks reasoning progress.
+    """
+
+    def __init__(self, state_dim: int = 28, n_phases: int = 6, n_actions: int = 6, hidden_size: int = 128) -> None:
+        super().__init__()
+        gru_input_dim = state_dim + n_phases
+        self.gru = nn.GRUCell(gru_input_dim, hidden_size)
+        self.policy_head = nn.Sequential(
+            nn.Linear(hidden_size, 64),
+            nn.ReLU(),
+            nn.Linear(64, n_actions),
+        )
+        self.value_head = nn.Sequential(
+            nn.Linear(hidden_size, 64),
+            nn.ReLU(),
+            nn.Linear(64, 1),
+        )
+        self.phase_probe = nn.Linear(hidden_size, n_phases)
+        self.hidden_size = hidden_size
+
+    def initial_hidden(self, batch_size: int = 1) -> torch.Tensor:
+        return torch.zeros(batch_size, self.hidden_size)
+
+    def forward(
+        self,
+        state_features: torch.Tensor,
+        phase_onehot: torch.Tensor,
+        h_prev: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        x = torch.cat([state_features, phase_onehot], dim=-1)
+        h_t = self.gru(x, h_prev)
+        action_logits = self.policy_head(h_t)
+        value = self.value_head(h_t).squeeze(-1)
+        phase_logits = self.phase_probe(h_t)
+        return action_logits, value, h_t, phase_logits
 
 
 def _load_tasks(tasks_path: str | Path, limit: int | None = None) -> list[TaskSpec]:
@@ -129,53 +171,116 @@ def _split_tasks(tasks: list[TaskSpec], eval_count: int, seed: int) -> tuple[lis
     return train_tasks, eval_tasks
 
 
-def _build_returns(rewards: list[float], gamma: float, device: torch.device) -> torch.Tensor:
-    returns = [0.0] * len(rewards)
-    running = 0.0
-    for idx in range(len(rewards) - 1, -1, -1):
-        running = rewards[idx] + gamma * running
-        returns[idx] = running
-    return torch.tensor(returns, dtype=torch.float32, device=device)
+def _trajectory_from_rollout(rollout: Any) -> dict[str, Any]:
+    steps: list[dict[str, Any]] = []
+    for transition in rollout.transitions:
+        if transition.log_prob is None or transition.action_logits is None:
+            continue
+        step_payload = {
+            "log_prob": transition.log_prob,
+            "action_logits": transition.action_logits,
+            "phase_logits": transition.phase_logits,
+            "phase_label": transition.phase_label,
+        }
+        steps.append(step_payload)
 
-
-def _train_step(
-    *,
-    optimizer: torch.optim.Optimizer,
-    transitions: list[Any],
-    gamma: float,
-    value_coef: float,
-    entropy_coef: float,
-    max_grad_norm: float,
-    device: torch.device,
-) -> dict[str, float]:
-    rewards = [float(transition.reward) for transition in transitions]
-    returns = _build_returns(rewards, gamma=gamma, device=device)
-
-    log_probs = torch.stack([transition.log_prob for transition in transitions]).to(device)
-    values = torch.stack([transition.value for transition in transitions]).to(device)
-    entropies = torch.stack([transition.entropy for transition in transitions]).to(device)
-
-    advantages = returns - values.detach()
-    policy_loss = -(log_probs * advantages).mean()
-    value_loss = F.mse_loss(values, returns)
-    entropy_bonus = entropies.mean()
-    loss = policy_loss + value_coef * value_loss - entropy_coef * entropy_bonus
-
-    optimizer.zero_grad()
-    loss.backward()
-    grad_norm = torch.nn.utils.clip_grad_norm_(
-        [parameter for group in optimizer.param_groups for parameter in group["params"]],
-        max_grad_norm,
-    )
-    optimizer.step()
-
+    controller = rollout.trace.get("controller", {})
     return {
-        "loss": float(loss.detach().cpu().item()),
-        "policy_loss": float(policy_loss.detach().cpu().item()),
-        "value_loss": float(value_loss.detach().cpu().item()),
-        "entropy": float(entropy_bonus.detach().cpu().item()),
-        "grad_norm": float(grad_norm.detach().cpu().item()) if hasattr(grad_norm, "detach") else float(grad_norm),
+        "steps": steps,
+        "final_answer": rollout.trace.get("final_answer", ""),
+        "action_sequence": list(controller.get("action_sequence", [])),
+        "phase_sequence": list(controller.get("phase_sequence", [])),
+        "reward": float(rollout.total_reward),
+        "quality_score": float(rollout.quality_score),
+        "trace": rollout.trace,
     }
+
+
+def _compute_grpo_advantages(rewards: list[float]) -> list[float]:
+    if not rewards:
+        return []
+    if len(rewards) < 2:
+        return [reward - 0.5 for reward in rewards]
+    mean_reward = sum(rewards) / len(rewards)
+    std_reward = (sum((reward - mean_reward) ** 2 for reward in rewards) / len(rewards)) ** 0.5
+    std_reward = max(std_reward, 1e-8)
+    return [(reward - mean_reward) / std_reward for reward in rewards]
+
+
+def grpo_loss(
+    trajectories: list[dict[str, Any]],
+    rewards: list[float],
+    entropy_coef: float = 0.01,
+) -> torch.Tensor:
+    """
+    Group Relative Policy Optimization.
+    """
+    advantages = _compute_grpo_advantages(rewards)
+
+    first_log_prob = None
+    for trajectory in trajectories:
+        for step in trajectory.get("steps", []):
+            if step.get("log_prob") is not None:
+                first_log_prob = step["log_prob"]
+                break
+        if first_log_prob is not None:
+            break
+
+    if first_log_prob is None:
+        return torch.tensor(0.0)
+
+    device = first_log_prob.device
+    policy_loss = torch.zeros((), dtype=torch.float32, device=device)
+    entropy_loss = torch.zeros((), dtype=torch.float32, device=device)
+
+    for trajectory, advantage in zip(trajectories, advantages):
+        advantage_tensor = torch.tensor(advantage, dtype=torch.float32, device=device)
+        for step in trajectory.get("steps", []):
+            log_prob = step.get("log_prob")
+            action_logits = step.get("action_logits")
+            if log_prob is None or action_logits is None:
+                continue
+            policy_loss = policy_loss - log_prob * advantage_tensor
+            probs = torch.softmax(action_logits, dim=-1)
+            entropy = -(probs * torch.log(probs + 1e-8)).sum()
+            entropy_loss = entropy_loss - entropy_coef * entropy
+
+    return policy_loss + entropy_loss
+
+
+def auxiliary_phase_loss(
+    trajectories: list[dict[str, Any]],
+    phase_loss_weight: float = 0.1,
+) -> torch.Tensor:
+    """
+    Auxiliary cross-entropy loss on the phase probe head.
+    """
+    first_phase_logits = None
+    for trajectory in trajectories:
+        for step in trajectory.get("steps", []):
+            if step.get("phase_logits") is not None:
+                first_phase_logits = step["phase_logits"]
+                break
+        if first_phase_logits is not None:
+            break
+
+    if first_phase_logits is None:
+        return torch.tensor(0.0)
+
+    device = first_phase_logits.device
+    criterion = nn.CrossEntropyLoss()
+    loss = torch.zeros((), dtype=torch.float32, device=device)
+
+    for trajectory in trajectories:
+        for step in trajectory.get("steps", []):
+            phase_logits = step.get("phase_logits")
+            phase_label = step.get("phase_label")
+            if phase_logits is None or phase_label is None:
+                continue
+            phase_label = phase_label.to(device)
+            loss = loss + criterion(phase_logits, phase_label)
+
+    return phase_loss_weight * loss
 
 
 def _evaluate_policy(
@@ -184,34 +289,44 @@ def _evaluate_policy(
     policy: TorchControllerPolicy,
     tasks: list[TaskSpec],
     limit: int,
-) -> tuple[dict[str, float], list[dict[str, Any]]]:
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     selected = tasks[: max(1, min(limit, len(tasks)))]
     rewards: list[float] = []
     qualities: list[float] = []
     tokens: list[float] = []
     elapsed: list[float] = []
     decisions: list[float] = []
+    phase_sequences: list[list[str]] = []
+    action_sequences: list[list[str]] = []
     rollouts_payload: list[dict[str, Any]] = []
 
     with torch.no_grad():
         for task in selected:
             rollout = runner.rollout_task(task, policy, deterministic=True, track_grad=False)
+            controller = rollout.trace["controller"]
             rewards.append(float(rollout.total_reward))
             qualities.append(float(rollout.quality_score))
-            tokens.append(float(rollout.trace["controller"]["used_tokens"]))
+            tokens.append(float(controller["used_tokens"]))
             elapsed.append(float(rollout.trace["total_elapsed_sec"]))
-            decisions.append(float(rollout.trace["controller"]["decision_count"]))
+            decisions.append(float(controller["decision_count"]))
+            phase_sequence = list(controller.get("phase_sequence", []))
+            action_sequence = list(controller.get("action_sequence", []))
+            phase_sequences.append(phase_sequence)
+            action_sequences.append(action_sequence)
             rollouts_payload.append(
                 {
                     "task_id": task.task_id,
                     "benchmark_name": task.benchmark_name,
                     "quality_score": float(rollout.quality_score),
                     "total_reward": float(rollout.total_reward),
+                    "phase_sequence": phase_sequence,
+                    "action_sequence": action_sequence,
                     "trace": rollout.trace,
                 }
             )
 
     count = float(len(selected))
+    reward_std = pstdev(rewards) if len(rewards) > 1 else 0.0
     metrics = {
         "count": count,
         "mean_reward": sum(rewards) / count,
@@ -219,6 +334,11 @@ def _evaluate_policy(
         "mean_tokens": sum(tokens) / count,
         "mean_elapsed_sec": sum(elapsed) / count,
         "mean_decisions": sum(decisions) / count,
+        "group_rewards": rewards,
+        "group_reward_mean": sum(rewards) / count,
+        "group_reward_std": reward_std,
+        "phase_sequence": phase_sequences[0] if phase_sequences else [],
+        "actions": action_sequences[0] if action_sequences else [],
     }
     return metrics, rollouts_payload
 
@@ -269,27 +389,22 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--seed", type=int, default=7, help="Random seed.")
 
     parser.add_argument("--learning-rate", type=float, default=3e-4)
-    parser.add_argument("--gamma", type=float, default=1.0)
-    parser.add_argument("--value-coef", type=float, default=0.5)
-    parser.add_argument("--entropy-coef", type=float, default=0.01)
-    parser.add_argument("--max-grad-norm", type=float, default=1.0)
     parser.add_argument("--hidden-size", type=int, default=128)
+    parser.add_argument("--max-grad-norm", type=float, default=1.0)
+    parser.add_argument("--grpo-group-size", type=int, default=4,
+                        help="Number of trajectories to sample per question for GRPO normalization")
+    parser.add_argument("--phase-loss-weight", type=float, default=0.1,
+                        help="Weight for auxiliary phase classification loss")
+    parser.add_argument("--entropy-coef", type=float, default=0.01,
+                        help="Entropy bonus coefficient for exploration")
+    parser.add_argument("--cheap-model", type=str, default="anthropic/claude-haiku-4-5-20251001",
+                        help="Model used for phase classification (should be cheapest available)")
 
     parser.add_argument("--budget-tokens", type=int, default=16000)
     parser.add_argument("--max-decisions", type=int, default=6)
     parser.add_argument("--max-restarts", type=int, default=1)
     parser.add_argument("--per-role-call-cap", type=int, default=2)
     parser.add_argument("--min-tokens-for-call", type=int, default=300)
-
-    parser.add_argument("--token-step-penalty", type=float, default=0.02)
-    parser.add_argument("--latency-step-penalty", type=float, default=0.01)
-    parser.add_argument("--restart-penalty", type=float, default=0.03)
-    parser.add_argument("--invalid-schema-penalty", type=float, default=0.02)
-    parser.add_argument("--stop-without-finalize-penalty", type=float, default=0.08)
-    parser.add_argument("--no-answer-penalty", type=float, default=0.20)
-    parser.add_argument("--terminal-quality-weight", type=float, default=1.0)
-    parser.add_argument("--terminal-token-penalty", type=float, default=0.20)
-    parser.add_argument("--terminal-latency-penalty", type=float, default=0.02)
 
     parser.add_argument("--device", default="auto", help="Torch device: auto|cpu|cuda")
     parser.add_argument("--resume", help="Optional checkpoint path to resume from.")
@@ -333,21 +448,17 @@ def main(argv: list[str] | None = None) -> int:
         max_restarts=args.max_restarts,
         per_role_call_cap=args.per_role_call_cap,
         min_tokens_for_call=args.min_tokens_for_call,
+        cheap_model=args.cheap_model,
     )
-    reward = RewardConfig(
-        token_step_penalty=args.token_step_penalty,
-        latency_step_penalty=args.latency_step_penalty,
-        restart_penalty=args.restart_penalty,
-        invalid_schema_penalty=args.invalid_schema_penalty,
-        stop_without_finalize_penalty=args.stop_without_finalize_penalty,
-        no_answer_penalty=args.no_answer_penalty,
-        terminal_quality_weight=args.terminal_quality_weight,
-        terminal_token_penalty=args.terminal_token_penalty,
-        terminal_latency_penalty=args.terminal_latency_penalty,
-    )
+    reward = RewardConfig()
     runner = AdaptiveCommitteeRunner(config=config, client=client, runtime=runtime, reward=reward)
 
-    model = TorchControllerModel(input_dim=runner.state_size, hidden_size=args.hidden_size)
+    model = ReasoningAwareController(
+        state_dim=runner.state_size,
+        n_phases=N_PHASES,
+        n_actions=len(ACTION_NAMES),
+        hidden_size=args.hidden_size,
+    )
     model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     policy = TorchControllerPolicy(model=model, device=str(device))
@@ -370,6 +481,7 @@ def main(argv: list[str] | None = None) -> int:
             "eval_task_count": len(eval_tasks),
             "config_name": config.name,
             "config_path": str(config.source_path),
+            "reasoning_phases": list(REASONING_PHASES),
         },
     )
     rollout_dump_path = outdir / "run_rollouts.json"
@@ -400,6 +512,8 @@ def main(argv: list[str] | None = None) -> int:
             tasks=eval_tasks,
             limit=min(args.eval_task_count, len(eval_tasks)),
         )
+        metrics["phase_loss"] = None
+        metrics["grpo_advantages"] = []
         rollout_dump["eval_events"].append(
             {
                 "episode": int(start_episode),
@@ -422,25 +536,57 @@ def main(argv: list[str] | None = None) -> int:
     for episode in range(start_episode + 1, args.episodes + 1):
         model.train()
         task = rng.choice(train_tasks)
-        rollout = runner.rollout_task(task, policy, deterministic=False, track_grad=True)
-        train_metrics = _train_step(
-            optimizer=optimizer,
-            transitions=rollout.transitions,
-            gamma=args.gamma,
-            value_coef=args.value_coef,
-            entropy_coef=args.entropy_coef,
-            max_grad_norm=args.max_grad_norm,
-            device=device,
-        )
+
+        trajectories: list[dict[str, Any]] = []
+        rewards: list[float] = []
+        rollouts: list[Any] = []
+        group_size = max(1, args.grpo_group_size)
+
+        for _ in range(group_size):
+            rollout = runner.rollout_task(task, policy, deterministic=False, track_grad=True)
+            trajectory = _trajectory_from_rollout(rollout)
+            trajectories.append(trajectory)
+            rewards.append(float(rollout.total_reward))
+            rollouts.append(rollout)
+
+        advantages = _compute_grpo_advantages(rewards)
+        pg_loss = grpo_loss(trajectories, rewards, entropy_coef=args.entropy_coef)
+        phase_loss = auxiliary_phase_loss(trajectories, phase_loss_weight=args.phase_loss_weight)
+        total_loss = pg_loss + phase_loss
+
+        optimizer.zero_grad()
+        total_loss.backward()
+        grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
+        optimizer.step()
+
+        best_index = max(range(len(rewards)), key=lambda idx: rewards[idx]) if rewards else 0
+        best_rollout = rollouts[best_index]
+        best_trace_controller = best_rollout.trace.get("controller", {})
+        mean_reward = mean(rewards) if rewards else 0.0
+        reward_std = pstdev(rewards) if len(rewards) > 1 else 0.0
+        mean_quality = mean([float(item.quality_score) for item in rollouts]) if rollouts else 0.0
+        mean_tokens = mean([float(item.trace["controller"]["used_tokens"]) for item in rollouts]) if rollouts else 0.0
+        mean_decisions = mean([float(item.trace["controller"]["decision_count"]) for item in rollouts]) if rollouts else 0.0
+        mean_elapsed = mean([float(item.trace["total_elapsed_sec"]) for item in rollouts]) if rollouts else 0.0
+
         record = {
             "episode": episode,
             "task_id": task.task_id,
-            "quality_score": float(rollout.quality_score),
-            "total_reward": float(rollout.total_reward),
-            "total_tokens": int(rollout.trace["controller"]["used_tokens"]),
-            "decision_count": int(rollout.trace["controller"]["decision_count"]),
-            "elapsed_sec": float(rollout.trace["total_elapsed_sec"]),
-            **train_metrics,
+            "quality_score": mean_quality,
+            "total_reward": mean_reward,
+            "total_tokens": int(mean_tokens),
+            "decision_count": int(mean_decisions),
+            "elapsed_sec": float(mean_elapsed),
+            "loss": float(total_loss.detach().cpu().item()),
+            "policy_loss": float(pg_loss.detach().cpu().item()) if hasattr(pg_loss, "detach") else float(pg_loss),
+            "phase_loss": float(phase_loss.detach().cpu().item()) if hasattr(phase_loss, "detach") else float(phase_loss),
+            "grad_norm": float(grad_norm.detach().cpu().item()) if hasattr(grad_norm, "detach") else float(grad_norm),
+            "actions": list(best_trace_controller.get("action_sequence", [])),
+            "phase_sequence": list(best_trace_controller.get("phase_sequence", [])),
+            "grpo_advantages": [float(value) for value in advantages],
+            "group_rewards": [float(value) for value in rewards],
+            "group_reward_mean": float(mean_reward),
+            "group_reward_std": float(reward_std),
         }
         _append_jsonl(train_log_path, record)
         rollout_dump["train_episodes"].append(
@@ -449,12 +595,12 @@ def main(argv: list[str] | None = None) -> int:
                 "task_id": task.task_id,
                 "benchmark_name": task.benchmark_name,
                 "record": record,
-                "trace": rollout.trace,
+                "group_rollouts": [item.trace for item in rollouts],
             }
         )
         _write_json(rollout_dump_path, rollout_dump)
         print(
-            f"episode={episode} reward={record['total_reward']:.4f} quality={record['quality_score']:.4f} "
+            f"episode={episode} mean_reward={record['total_reward']:.4f} mean_quality={record['quality_score']:.4f} "
             f"tokens={record['total_tokens']} loss={record['loss']:.4f}"
         )
 
@@ -477,6 +623,8 @@ def main(argv: list[str] | None = None) -> int:
                 limit=min(args.eval_task_count, len(eval_tasks)),
             )
             eval_metrics["episode"] = episode
+            eval_metrics["phase_loss"] = None
+            eval_metrics["grpo_advantages"] = []
             _append_jsonl(eval_log_path, eval_metrics)
             rollout_dump["eval_events"].append(
                 {

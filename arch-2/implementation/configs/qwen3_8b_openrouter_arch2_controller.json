@@ -1,5 +1,6 @@
 {
   "name": "qwen3_8b_openrouter_arch2_controller",
+  "architecture_name": "arch2",
   "provider": {
     "api_base": "https://openrouter.ai/api/v1",
     "api_key_env": "OPENROUTER_API_KEY",
@@ -12,7 +13,7 @@
   },
   "architecture": {
     "family": "architecture_2",
-    "description": "Architecture 2 adaptive controller over frozen Qwen3-8B specialist prompts served through OpenRouter.",
+    "description": "Arch2: frozen specialist committee + reasoning-aware learned controller (GRPO + RLVR)",
     "specialization_source": "frozen_specialists_prompt_scaffold",
     "stage_sequence": [
       "coordinator_plan",
@@ -28,6 +29,28 @@
       "critic",
       "coordinator"
     ]
+  },
+  "controller": {
+    "hidden_size": 128,
+    "state_dim": 28,
+    "n_phases": 6,
+    "n_actions": 6
+  },
+  "training": {
+    "grpo_group_size": 4,
+    "phase_loss_weight": 0.1,
+    "entropy_coef": 0.01,
+    "lr": 0.0003,
+    "grad_clip": 1.0
+  },
+  "reward": {
+    "type": "verifiable",
+    "hotpotqa_f1_threshold": 0.6,
+    "gpqa_match": "letter_exact"
+  },
+  "models": {
+    "committee": "qwen/qwen3-8b",
+    "phase_classifier": "anthropic/claude-haiku-4-5-20251001"
   },
   "roles": {
     "coordinator_plan": {
