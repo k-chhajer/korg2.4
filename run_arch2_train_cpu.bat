@@ -53,6 +53,12 @@ if errorlevel 1 (
   echo [WARN] numpy is not installed. Training can run, but torch may print warnings.
 )
 
+python -c "import sentence_transformers" >nul 2>&1
+if errorlevel 1 (
+  echo [WARN] sentence-transformers is not installed. Semantic embeddings will fall back to zeros.
+  echo [WARN] Install with: pip install -r "%ROOT%arch-2\implementation\requirements.txt"
+)
+
 set "CONFIG=%ROOT%arch-2\implementation\configs\qwen3_8b_openrouter_arch2_controller.json"
 set "TASKS=%ROOT%arch-2\evals\data\benchmarks\hotpotqa_dev.jsonl"
 set "OUTDIR=%ROOT%arch-2\runs\arch2_controller_hotpot_cpu"
@@ -68,6 +74,11 @@ python -m committee_llm.train_controller ^
   --eval-every 10 ^
   --save-every 5 ^
   --eval-task-count 24 ^
+  --grpo-group-size 4 ^
+  --phase-loss-weight 0.1 ^
+  --entropy-coef 0.01 ^
+  --cheap-model anthropic/claude-haiku-4-5-20251001 ^
+  --semantic-model all-MiniLM-L6-v2 ^
   --budget-tokens 16000 ^
   --max-decisions 6 ^
   --max-restarts 1 ^

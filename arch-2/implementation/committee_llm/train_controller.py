@@ -15,7 +15,9 @@ from committee_llm.adaptive import (
     N_PHASES,
     REASONING_PHASES,
     RewardConfig,
+    SEMANTIC_EMBED_DIM,
     TaskSpec,
+    TASK_PROGRESS_DIM,
     TorchControllerPolicy,
 )
 from committee_llm.client import OpenAICompatibleChatClient
@@ -35,9 +37,35 @@ class ReasoningAwareController(nn.Module):
     Controller with a GRU hidden state that tracks reasoning progress.
     """
 
-    def __init__(self, state_dim: int = 28, n_phases: int = 6, n_actions: int = 6, hidden_size: int = 128) -> None:
+    def __init__(
+        self,
+        state_dim: int = 28,
+        n_phases: int = 6,
+        n_actions: int = 6,
+        hidden_size: int = 128,
+        semantic_dim: int = SEMANTIC_EMBED_DIM,
+        semantic_proj_dim: int = 32,
+        semantic_delta_dim: int = SEMANTIC_EMBED_DIM,
+        semantic_delta_proj_dim: int = 16,
+        task_progress_dim: int = TASK_PROGRESS_DIM,
+    ) -> None:
         super().__init__()
-        gru_input_dim = state_dim + n_phases
+        self.semantic_dim = semantic_dim
+        self.semantic_proj_dim = semantic_proj_dim
+        self.semantic_delta_dim = semantic_delta_dim
+        self.semantic_delta_proj_dim = semantic_delta_proj_dim
+        self.task_progress_dim = task_progress_dim
+        self.semantic_proj = nn.Sequential(
+            nn.Linear(semantic_dim, 64),
+            nn.ReLU(),
+            nn.Linear(64, semantic_proj_dim),
+        )
+        self.semantic_delta_proj = nn.Sequential(
+            nn.Linear(semantic_delta_dim, 64),
+            nn.ReLU(),
+            nn.Linear(64, semantic_delta_proj_dim),
+        )
+        gru_input_dim = state_dim + n_phases + semantic_proj_dim + semantic_delta_proj_dim + task_progress_dim
         self.gru = nn.GRUCell(gru_input_dim, hidden_size)
         self.policy_head = nn.Sequential(
             nn.Linear(hidden_size, 64),
@@ -59,9 +87,42 @@ class ReasoningAwareController(nn.Module):
         self,
         state_features: torch.Tensor,
         phase_onehot: torch.Tensor,
-        h_prev: torch.Tensor,
+        semantic_embed: torch.Tensor | None = None,
+        task_progress: torch.Tensor | None = None,
+        h_prev: torch.Tensor | None = None,
+        semantic_delta: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
-        x = torch.cat([state_features, phase_onehot], dim=-1)
+        if (
+            h_prev is None
+            and task_progress is None
+            and semantic_embed is not None
+            and semantic_embed.shape[-1] == self.hidden_size
+        ):
+            h_prev = semantic_embed
+            semantic_embed = None
+        if h_prev is None:
+            h_prev = self.initial_hidden(batch_size=state_features.shape[0]).to(state_features.device)
+        if semantic_embed is None:
+            semantic_embed = torch.zeros(
+                state_features.shape[0], self.semantic_dim, dtype=state_features.dtype, device=state_features.device
+            )
+        if task_progress is None:
+            task_progress = torch.zeros(
+                state_features.shape[0],
+                self.task_progress_dim,
+                dtype=state_features.dtype,
+                device=state_features.device,
+            )
+        if semantic_delta is None:
+            semantic_delta = torch.zeros(
+                state_features.shape[0],
+                self.semantic_delta_dim,
+                dtype=state_features.dtype,
+                device=state_features.device,
+            )
+        semantic = self.semantic_proj(semantic_embed)
+        delta = self.semantic_delta_proj(semantic_delta)
+        x = torch.cat([state_features, phase_onehot, semantic, delta, task_progress], dim=-1)
         h_t = self.gru(x, h_prev)
         action_logits = self.policy_head(h_t)
         value = self.value_head(h_t).squeeze(-1)
@@ -399,6 +460,10 @@ def build_parser() -> argparse.ArgumentParser:
                         help="Entropy bonus coefficient for exploration")
     parser.add_argument("--cheap-model", type=str, default="anthropic/claude-haiku-4-5-20251001",
                         help="Model used for phase classification (should be cheapest available)")
+    parser.add_argument("--semantic-model", type=str, default="all-MiniLM-L6-v2",
+                        help="Local sentence-transformers model for frozen semantic state embeddings")
+    parser.add_argument("--disable-semantic-embeddings", action="store_true",
+                        help="Disable local semantic embeddings and feed zeros instead")
 
     parser.add_argument("--budget-tokens", type=int, default=16000)
     parser.add_argument("--max-decisions", type=int, default=6)
@@ -449,6 +514,8 @@ def main(argv: list[str] | None = None) -> int:
         per_role_call_cap=args.per_role_call_cap,
         min_tokens_for_call=args.min_tokens_for_call,
         cheap_model=args.cheap_model,
+        semantic_model=args.semantic_model,
+        use_semantic_embeddings=not args.disable_semantic_embeddings,
     )
     reward = RewardConfig()
     runner = AdaptiveCommitteeRunner(config=config, client=client, runtime=runtime, reward=reward)
@@ -458,6 +525,11 @@ def main(argv: list[str] | None = None) -> int:
         n_phases=N_PHASES,
         n_actions=len(ACTION_NAMES),
         hidden_size=args.hidden_size,
+        semantic_dim=SEMANTIC_EMBED_DIM,
+        semantic_proj_dim=32,
+        semantic_delta_dim=SEMANTIC_EMBED_DIM,
+        semantic_delta_proj_dim=16,
+        task_progress_dim=TASK_PROGRESS_DIM,
     )
     model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
@@ -482,6 +554,11 @@ def main(argv: list[str] | None = None) -> int:
             "config_name": config.name,
             "config_path": str(config.source_path),
             "reasoning_phases": list(REASONING_PHASES),
+            "semantic_embedding_dim": SEMANTIC_EMBED_DIM,
+            "semantic_projection_dim": 32,
+            "semantic_delta_dim": SEMANTIC_EMBED_DIM,
+            "semantic_delta_projection_dim": 16,
+            "task_progress_dim": TASK_PROGRESS_DIM,
         },
     )
     rollout_dump_path = outdir / "run_rollouts.json"

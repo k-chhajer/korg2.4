@@ -58,6 +58,8 @@ REASONING_PHASES = [
 
 PHASE_TO_IDX = {phase: index for index, phase in enumerate(REASONING_PHASES)}
 N_PHASES = len(REASONING_PHASES)
+SEMANTIC_EMBED_DIM = 384
+TASK_PROGRESS_DIM = 2
 
 
 def action_name(action_index: int) -> str:
@@ -91,6 +93,121 @@ def _token_f1(pred: str, gold: str) -> float:
     if precision + recall == 0:
         return 0.0
     return 2 * precision * recall / (precision + recall)
+
+
+class SemanticStateEncoder:
+    """
+    Frozen local encoder for question-conditioned recent debate semantics.
+
+    The controller trains only a small projection over this vector. If the
+    optional dependency or model cache is unavailable, this safely returns
+    zeros so training can still run with the structural/phase state.
+    """
+
+    def __init__(self, model_name: str = "all-MiniLM-L6-v2", embedding_dim: int = SEMANTIC_EMBED_DIM) -> None:
+        self.model_name = model_name
+        self.embedding_dim = embedding_dim
+        self._model: Any | None = None
+        self._disabled = False
+        self.last_error: str | None = None
+
+    def _zeros(self) -> list[float]:
+        return [0.0] * self.embedding_dim
+
+    def _load_model(self) -> Any | None:
+        if self._disabled:
+            return None
+        if self._model is not None:
+            return self._model
+        try:
+            from sentence_transformers import SentenceTransformer  # type: ignore
+
+            try:
+                self._model = SentenceTransformer(self.model_name, local_files_only=True)
+            except TypeError:
+                self._model = SentenceTransformer(self.model_name)
+            except Exception:
+                self._model = SentenceTransformer(self.model_name)
+            return self._model
+        except Exception as exc:
+            self._disabled = True
+            self.last_error = str(exc)
+            return None
+
+    def encode(self, *, question: str, transcript: list[dict[str, str]]) -> list[float]:
+        recent = transcript[-3:] if len(transcript) >= 3 else transcript
+        recent_text = " | ".join(
+            f"{turn.get('role', 'unknown')}: {str(turn.get('content', ''))[:300]}" for turn in recent
+        )
+        text = f"Question: {question[:400]} | Recent debate: {recent_text}"
+        return self.encode_text(text)
+
+    def encode_text(self, text: str) -> list[float]:
+        model = self._load_model()
+        if model is None:
+            return self._zeros()
+        try:
+            embedding = model.encode(text, show_progress_bar=False)
+            values = [float(item) for item in embedding.tolist()]
+        except Exception as exc:
+            self.last_error = str(exc)
+            return self._zeros()
+
+        if len(values) < self.embedding_dim:
+            values.extend([0.0] * (self.embedding_dim - len(values)))
+        return values[: self.embedding_dim]
+
+    def encode_delta(self, transcript: list[dict[str, str]]) -> list[float]:
+        if len(transcript) < 2:
+            return self._zeros()
+        previous_text = f"{transcript[-2].get('role', 'unknown')}: {str(transcript[-2].get('content', ''))[:300]}"
+        current_text = f"{transcript[-1].get('role', 'unknown')}: {str(transcript[-1].get('content', ''))[:300]}"
+        previous = self.encode_text(previous_text)
+        current = self.encode_text(current_text)
+        return [current_value - previous_value for current_value, previous_value in zip(current, previous)]
+
+
+def compute_task_progress_features(question: str, transcript: list[dict[str, str]]) -> list[float]:
+    """
+    Cheap semantic progress proxy for multi-hop QA.
+
+    Feature 0: fraction of capitalized question entities observed in the transcript.
+    Feature 1: whether a numeric/date-like answer candidate has appeared.
+    """
+    entity_pattern = r"\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b"
+    stop_entities = {
+        "A",
+        "An",
+        "And",
+        "Are",
+        "Did",
+        "Do",
+        "Does",
+        "For",
+        "How",
+        "In",
+        "Is",
+        "Of",
+        "The",
+        "What",
+        "When",
+        "Where",
+        "Which",
+        "Who",
+        "Whom",
+        "Whose",
+        "Why",
+    }
+    question_entities = {
+        entity.strip()
+        for entity in re.findall(entity_pattern, question)
+        if entity.strip() and entity.strip() not in stop_entities
+    }
+    transcript_text = " ".join(str(turn.get("content", "")) for turn in transcript)
+    covered = sum(1 for entity in question_entities if entity in transcript_text)
+    coverage = covered / max(len(question_entities), 1)
+    has_numeric_answer = bool(re.search(r"\b\d{4}\b|\b\d+(?:\.\d+)?\b", transcript_text))
+    return [float(max(0.0, min(1.0, coverage))), float(has_numeric_answer)]
 
 
 def compute_verifiable_reward(
@@ -231,6 +348,8 @@ class AdaptiveRuntimeConfig:
     min_tokens_for_call: int = 300
     max_backend_retries: int = 2
     cheap_model: str = "anthropic/claude-haiku-4-5-20251001"
+    semantic_model: str = "all-MiniLM-L6-v2"
+    use_semantic_embeddings: bool = True
 
 
 @dataclass(slots=True)
@@ -285,6 +404,9 @@ class ControllerPolicy:
         deterministic: bool,
         track_grad: bool,
         phase_idx: int | None = None,
+        semantic_vector: list[float] | None = None,
+        semantic_delta: list[float] | None = None,
+        task_progress: list[float] | None = None,
     ) -> PolicyDecision:
         raise NotImplementedError
 
@@ -303,8 +425,11 @@ class RandomControllerPolicy(ControllerPolicy):
         deterministic: bool,
         track_grad: bool,
         phase_idx: int | None = None,
+        semantic_vector: list[float] | None = None,
+        semantic_delta: list[float] | None = None,
+        task_progress: list[float] | None = None,
     ) -> PolicyDecision:
-        del state_vector, deterministic, track_grad, phase_idx
+        del state_vector, deterministic, track_grad, phase_idx, semantic_vector, semantic_delta, task_progress
         allowed = [index for index, allowed_flag in enumerate(action_mask) if allowed_flag]
         if not allowed:
             return PolicyDecision(action=ACTION_STOP)
@@ -324,8 +449,11 @@ class HeuristicControllerPolicy(ControllerPolicy):
         deterministic: bool,
         track_grad: bool,
         phase_idx: int | None = None,
+        semantic_vector: list[float] | None = None,
+        semantic_delta: list[float] | None = None,
+        task_progress: list[float] | None = None,
     ) -> PolicyDecision:
-        del deterministic, track_grad, phase_idx
+        del deterministic, track_grad, phase_idx, semantic_vector, semantic_delta, task_progress
         remaining_budget = state_vector[1]
         has_research = state_vector[4] > 0.0
         has_analyst = state_vector[5] > 0.0
@@ -399,6 +527,9 @@ if nn is not None:
             deterministic: bool,
             track_grad: bool,
             phase_idx: int | None = None,
+            semantic_vector: list[float] | None = None,
+            semantic_delta: list[float] | None = None,
+            task_progress: list[float] | None = None,
         ) -> PolicyDecision:
             if not any(action_mask):
                 return PolicyDecision(action=ACTION_STOP)
@@ -414,9 +545,40 @@ if nn is not None:
                         self.start_episode()
                     phase_onehot = torch.zeros((1, N_PHASES), dtype=torch.float32, device=self.device)
                     phase_onehot[0, phase_label] = 1.0
-                    action_logits, values, hidden_next, phase_logits = self.model(
-                        state_tensor, phase_onehot, self._hidden_state
-                    )
+                    if hasattr(self.model, "semantic_dim"):
+                        semantic_dim = int(getattr(self.model, "semantic_dim"))
+                        delta_dim = int(getattr(self.model, "semantic_delta_dim", semantic_dim))
+                        progress_dim = int(getattr(self.model, "task_progress_dim", 0))
+                        semantic_values = list(semantic_vector or [])
+                        if len(semantic_values) < semantic_dim:
+                            semantic_values.extend([0.0] * (semantic_dim - len(semantic_values)))
+                        semantic_tensor = torch.tensor(
+                            [semantic_values[:semantic_dim]], dtype=torch.float32, device=self.device
+                        )
+                        delta_values = list(semantic_delta or [])
+                        if len(delta_values) < delta_dim:
+                            delta_values.extend([0.0] * (delta_dim - len(delta_values)))
+                        delta_tensor = torch.tensor(
+                            [delta_values[:delta_dim]], dtype=torch.float32, device=self.device
+                        )
+                        progress_values = list(task_progress or [])
+                        if len(progress_values) < progress_dim:
+                            progress_values.extend([0.0] * (progress_dim - len(progress_values)))
+                        progress_tensor = torch.tensor(
+                            [progress_values[:progress_dim]], dtype=torch.float32, device=self.device
+                        )
+                        action_logits, values, hidden_next, phase_logits = self.model(
+                            state_tensor,
+                            phase_onehot,
+                            semantic_tensor,
+                            progress_tensor,
+                            self._hidden_state,
+                            delta_tensor,
+                        )
+                    else:
+                        action_logits, values, hidden_next, phase_logits = self.model(
+                            state_tensor, phase_onehot, self._hidden_state
+                        )
                     self._hidden_state = hidden_next if track_grad else hidden_next.detach()
                 else:
                     action_logits, values = self.model(state_tensor)
@@ -463,8 +625,12 @@ else:
             deterministic: bool,
             track_grad: bool,
             phase_idx: int | None = None,
+            semantic_vector: list[float] | None = None,
+            semantic_delta: list[float] | None = None,
+            task_progress: list[float] | None = None,
         ) -> PolicyDecision:
-            del state_vector, action_mask, deterministic, track_grad, phase_idx
+            del state_vector, action_mask, deterministic, track_grad, phase_idx, semantic_vector, semantic_delta
+            del task_progress
             raise RuntimeError("Torch is required for TorchControllerPolicy.")
 
 
@@ -481,6 +647,11 @@ class AdaptiveCommitteeRunner:
         self.client = client
         self.runtime = runtime or AdaptiveRuntimeConfig()
         self.reward = reward or RewardConfig()
+        self.semantic_encoder = (
+            SemanticStateEncoder(model_name=self.runtime.semantic_model)
+            if self.runtime.use_semantic_embeddings
+            else None
+        )
 
     @property
     def state_size(self) -> int:
@@ -731,6 +902,17 @@ class AdaptiveCommitteeRunner:
                 client=self.client,
                 cheap_model=self.runtime.cheap_model,
             )
+            semantic_vector = (
+                self.semantic_encoder.encode(question=task.prompt, transcript=transcript)
+                if self.semantic_encoder is not None
+                else [0.0] * SEMANTIC_EMBED_DIM
+            )
+            semantic_delta = (
+                self.semantic_encoder.encode_delta(transcript)
+                if self.semantic_encoder is not None
+                else [0.0] * SEMANTIC_EMBED_DIM
+            )
+            task_progress = compute_task_progress_features(task.prompt, transcript)
 
             decision = policy.select_action(
                 state_vector=state_vector,
@@ -738,6 +920,9 @@ class AdaptiveCommitteeRunner:
                 deterministic=deterministic,
                 track_grad=track_grad,
                 phase_idx=phase_idx,
+                semantic_vector=semantic_vector,
+                semantic_delta=semantic_delta,
+                task_progress=task_progress,
             )
             selected_action = decision.action
             invalid_action = not (0 <= selected_action < len(action_mask)) or not action_mask[selected_action]
@@ -832,6 +1017,14 @@ class AdaptiveCommitteeRunner:
                     "remaining_budget_tokens": max(0, remaining_budget),
                     "phase_idx": phase_idx,
                     "phase_label": REASONING_PHASES[phase_idx],
+                    "semantic_embedding_dim": len(semantic_vector),
+                    "semantic_embedding_available": any(abs(value) > 0.0 for value in semantic_vector),
+                    "semantic_delta_dim": len(semantic_delta),
+                    "semantic_delta_available": any(abs(value) > 0.0 for value in semantic_delta),
+                    "task_progress_features": {
+                        "question_entity_coverage": task_progress[0],
+                        "has_numeric_candidate": bool(task_progress[1]),
+                    },
                     "log_prob": float(decision.log_prob.detach().cpu().item())
                     if hasattr(decision.log_prob, "detach")
                     else (float(decision.log_prob) if decision.log_prob is not None else None),
@@ -887,6 +1080,14 @@ class AdaptiveCommitteeRunner:
                     "per_role_call_cap": self.runtime.per_role_call_cap,
                     "min_tokens_for_call": self.runtime.min_tokens_for_call,
                     "cheap_model": self.runtime.cheap_model,
+                    "semantic_model": self.runtime.semantic_model,
+                    "use_semantic_embeddings": self.runtime.use_semantic_embeddings,
+                    "semantic_embedding_dim": SEMANTIC_EMBED_DIM,
+                    "semantic_delta_dim": SEMANTIC_EMBED_DIM,
+                    "task_progress_dim": TASK_PROGRESS_DIM,
+                    "semantic_encoder_error": self.semantic_encoder.last_error
+                    if self.semantic_encoder is not None
+                    else None,
                 },
                 "reward": {
                     "type": self.reward.reward_type,
