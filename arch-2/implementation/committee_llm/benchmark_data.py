@@ -80,8 +80,76 @@ def convert_hotpotqa(input_path: str | Path, output_path: str | Path, *, limit: 
     return len(converted)
 
 
+def convert_2wikimultihop(
+    input_path: str | Path,
+    output_path: str | Path,
+    *,
+    limit: int | None = None,
+    split: str | None = None,
+) -> int:
+    raw_items = _read_json_items(input_path)
+    converted: list[dict[str, Any]] = []
+
+    for item in _limit_items(raw_items, limit):
+        context_items = item.get("context", [])
+        paragraphs: list[tuple[str, str]] = []
+        titles: list[str] = []
+        for paragraph in context_items:
+            if not isinstance(paragraph, list) or len(paragraph) != 2:
+                continue
+            title, sentences = paragraph
+            if not isinstance(title, str) or not isinstance(sentences, list):
+                continue
+            text = " ".join(sentence.strip() for sentence in sentences if isinstance(sentence, str) and sentence.strip())
+            if not text:
+                continue
+            paragraphs.append((title, text))
+            titles.append(title)
+
+        answer = str(item.get("answer", "")).strip()
+        if not answer:
+            continue
+
+        question_type = str(item.get("type") or "").strip()
+        task_id = str(item.get("_id") or item.get("id") or f"2wiki-{len(converted) + 1:05d}")
+
+        converted.append(
+            {
+                "id": task_id,
+                "benchmark_name": "2wikimultihop",
+                "benchmark_split": split or str(item.get("split") or "train"),
+                "task_type": "open_qa",
+                "domain": "multi_hop_qa",
+                "prompt": str(item["question"]).strip(),
+                "context": _format_context_paragraphs(paragraphs),
+                "deliverable": (
+                    "Answer the multi-hop question using only the provided context. "
+                    "Start with a short answer phrase, then briefly justify the evidence chain."
+                ),
+                "evaluation_criteria": [
+                    "Answer should match the gold answer under normalized EM/F1.",
+                    "Reasoning should use the provided context and connect the relevant hops.",
+                ],
+                "references": titles,
+                "reference_answers": [answer],
+                "metadata": {
+                    "source_dataset": "2WikiMultihopQA",
+                    "question_type": question_type or None,
+                    "supporting_facts": item.get("supporting_facts", []),
+                    "evidences": item.get("evidences", []),
+                    "evidences_id": item.get("evidences_id", []),
+                    "entity_ids": item.get("entity_ids"),
+                    "answer_id": item.get("answer_id"),
+                },
+            }
+        )
+
+    _write_jsonl(Path(output_path), converted)
+    return len(converted)
+
+
 def _read_json_items(path: str | Path) -> list[dict[str, Any]]:
-    text = Path(path).read_text(encoding="utf-8").strip()
+    text = Path(path).read_text(encoding="utf-8-sig").strip()
     if not text:
         return []
     if text.startswith("["):
@@ -232,10 +300,11 @@ def convert_gpqa(input_path: str | Path, output_path: str | Path, *, limit: int 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Convert official benchmark data into committee_llm task JSONL.")
-    parser.add_argument("--suite", required=True, choices=["hotpotqa", "musique", "gpqa"])
+    parser.add_argument("--suite", required=True, choices=["hotpotqa", "musique", "gpqa", "2wikimultihop"])
     parser.add_argument("--input", required=True, help="Path to the original benchmark file.")
     parser.add_argument("--output", required=True, help="Path to the converted JSONL output.")
     parser.add_argument("--limit", type=int, help="Optional max number of examples to convert.")
+    parser.add_argument("--split", help="Optional split name to store in converted task metadata.")
     return parser
 
 
@@ -246,6 +315,8 @@ def main(argv: list[str] | None = None) -> int:
         count = convert_hotpotqa(args.input, args.output, limit=args.limit)
     elif args.suite == "musique":
         count = convert_musique(args.input, args.output, limit=args.limit)
+    elif args.suite == "2wikimultihop":
+        count = convert_2wikimultihop(args.input, args.output, limit=args.limit, split=args.split)
     else:
         count = convert_gpqa(args.input, args.output, limit=args.limit)
 
