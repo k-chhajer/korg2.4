@@ -152,6 +152,7 @@ class DefaultRoleSettings:
     model: str
     temperature: float = 0.3
     max_tokens: int = 1200
+    extra_body: dict[str, Any] | None = None
 
 
 @dataclass(slots=True)
@@ -259,7 +260,7 @@ class ExperimentConfig:
             "max_tokens": role.max_tokens
             if role.max_tokens is not None
             else self.defaults.max_tokens,
-            "extra_body": role.extra_body,
+            "extra_body": role.extra_body if role.extra_body is not None else self.defaults.extra_body,
         }
 
     def load_system_prompt(self, role_name: str) -> str:

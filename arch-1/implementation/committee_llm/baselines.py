@@ -105,6 +105,7 @@ class SingleShotRunner:
             ],
             temperature=self.temperature if self.temperature is not None else self.config.defaults.temperature,
             max_tokens=self.max_tokens if self.max_tokens is not None else self.config.defaults.max_tokens,
+            extra_body=self.config.defaults.extra_body,
         )
 
         step = {
@@ -112,6 +113,7 @@ class SingleShotRunner:
             "model": result.model,
             "temperature": self.temperature if self.temperature is not None else self.config.defaults.temperature,
             "max_tokens": self.max_tokens if self.max_tokens is not None else self.config.defaults.max_tokens,
+            "extra_body": self.config.defaults.extra_body,
             "system_prompt": _base_system_prompt(),
             "user_prompt": user_prompt,
             "response": result.content,
@@ -169,6 +171,7 @@ class SingleModelMultiTurnRunner:
                 messages=messages,
                 temperature=self.config.defaults.temperature,
                 max_tokens=self.config.defaults.max_tokens,
+                extra_body=self.config.defaults.extra_body,
             )
             messages.append({"role": "assistant", "content": result.content})
             steps.append(
@@ -177,6 +180,7 @@ class SingleModelMultiTurnRunner:
                     "model": result.model,
                     "temperature": self.config.defaults.temperature,
                     "max_tokens": self.config.defaults.max_tokens,
+                    "extra_body": self.config.defaults.extra_body,
                     "system_prompt": _base_system_prompt(),
                     "user_prompt": instruction,
                     "response": result.content,
@@ -229,6 +233,7 @@ class SingleModelStructuredRunner:
             ],
             temperature=self.config.defaults.temperature,
             max_tokens=self.config.defaults.max_tokens,
+            extra_body=self.config.defaults.extra_body,
         )
 
         final_answer = result.content.split("Final Answer:", 1)[-1].strip() if "Final Answer:" in result.content else result.content.strip()
@@ -237,6 +242,7 @@ class SingleModelStructuredRunner:
             "model": result.model,
             "temperature": self.config.defaults.temperature,
             "max_tokens": self.config.defaults.max_tokens,
+            "extra_body": self.config.defaults.extra_body,
             "system_prompt": _base_system_prompt(),
             "user_prompt": user_prompt,
             "response": result.content,

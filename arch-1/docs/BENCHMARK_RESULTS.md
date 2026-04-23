@@ -1,61 +1,53 @@
 # Benchmark Results
 
-- Summary source: `C:\Users\luthi\Documents\korg\korg2_4_remote\arch-1\evals\runs\hotpotqa_modal_smoke_2\summary.json`
-- Generated at (UTC): `2026-04-03T17:55:21+00:00`
-- Config: `qwen3_8b_modal_eval`
-- Config path: `C:\Users\luthi\Documents\korg\korg2_4_remote\arch-1\implementation\configs\qwen3_8b_modal_eval.json`
-- Task count: `2`
+- Updated at (UTC): `2026-04-15T16:20:00+00:00`
+- Benchmark: HotpotQA Distractor, first `75` examples from `arch-1/evals/data/benchmarks/hotpotqa_dev.jsonl`
+- Hardware: AWS `g4dn.xlarge`, Qwen3-8B-AWQ via local vLLM
+- Primary metric: `answer_f1`
 
-## Verification
+## Source Summaries
 
-Paper-claim blockers:
+- `arch-1/evals/runs/hotpotqa_aws_g4dn_qwen_single_shot_75_20260414/summary.json`
+- `s3://korg24-arch1-gpqa-20260406-525184038455/hotpotqa_aws_g4dn_qwen_single_shot_thinking_75_20260415/summary.json`
+- `arch-1/evals/runs/hotpotqa_aws_g4dn_thinking_75_20260407_retry4b/summary.json`
 
-- Role specialization source is not set to post_trained_role_specialists, so this config should be treated as a prompt scaffold.
+## Run Overview
 
-## System Overview
+| Run | System | Thinking | Completed | Failed | Mean Run (s) | Tasks/s | Total Tokens |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: |
+| `hotpotqa_aws_g4dn_qwen_single_shot_75_20260414` | single_shot | no | 75 | 0 | 23.0636 | 0.0433 | 174866 |
+| `hotpotqa_aws_g4dn_qwen_single_shot_thinking_75_20260415` | single_shot | yes | 75 | 0 | 21.5607 | 0.0464 | 174866 |
+| `hotpotqa_aws_g4dn_thinking_75_20260407_retry4b` | committee | partial role-level thinking | 73 | 2 | 150.0377 | 0.0065 | 1543424 |
 
-| System | Completed | Failed | Wall Clock (s) | Mean Run (s) | Tasks/s | Total Tokens | Model Calls |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| committee | 2 | 0 | 464.4035 | 232.2001 | 0.0043 | 39229 | 10 |
-| single_multiturn | 2 | 0 | 174.9127 | 87.451 | 0.0114 | 12847 | 6 |
-| single_shot | 2 | 0 | 335.1067 | 167.5434 | 0.006 | 4642 | 2 |
-| single_structured | 2 | 0 | 90.2417 | 45.1146 | 0.0222 | 4581 | 2 |
+## HotpotQA Metrics
 
-## Overall Metrics
+| Run | answer_em | answer_f1 | supporting_fact_context_coverage | supporting_fact_title_precision | supporting_fact_title_recall |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `hotpotqa_aws_g4dn_qwen_single_shot_75_20260414` | 0.0000 | 0.0162 | 1.0000 | 0.8978 | 0.8978 |
+| `hotpotqa_aws_g4dn_qwen_single_shot_thinking_75_20260415` | 0.0000 | 0.0162 | 1.0000 | 0.8978 | 0.8978 |
+| `hotpotqa_aws_g4dn_thinking_75_20260407_retry4b` | 0.3836 | 0.5774 | 1.0000 | 0.6039 | 0.6039 |
 
-| System | answer_em | answer_f1 | supporting_fact_context_coverage | supporting_fact_title_precision | supporting_fact_title_recall |
-| --- | --- | --- | --- | --- | --- |
-| committee | 0.5 | 0.6364 | 1 | 0.5 | 0.5 |
-| single_multiturn | 0 | 0.0156 | 1 | 0.8333 | 0.8333 |
-| single_shot | 0 | 0.009 | 1 | 1 | 1 |
-| single_structured | 0 | 0.0082 | 1 | 1 | 1 |
+## Conservative Full-Set Scores
 
-## Per-Benchmark Metrics
+The committee run completed `73/75` examples. The table below treats the two failed examples as zero-score examples for answer metrics.
 
-| System | Benchmark | Count | answer_em | answer_f1 | supporting_fact_context_coverage | supporting_fact_title_precision | supporting_fact_title_recall |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| committee | hotpotqa_distractor | 2 | 0.5 | 0.6364 | 1 | 0.5 | 0.5 |
-| single_multiturn | hotpotqa_distractor | 2 | 0 | 0.0156 | 1 | 0.8333 | 0.8333 |
-| single_shot | hotpotqa_distractor | 2 | 0 | 0.009 | 1 | 1 | 1 |
-| single_structured | hotpotqa_distractor | 2 | 0 | 0.0082 | 1 | 1 | 1 |
+| Run | Completed-Traces answer_em | Full-Set answer_em | Completed-Traces answer_f1 | Full-Set answer_f1 |
+| --- | ---: | ---: | ---: | ---: |
+| `hotpotqa_aws_g4dn_qwen_single_shot_75_20260414` | 0.0000 | 0.0000 | 0.0162 | 0.0162 |
+| `hotpotqa_aws_g4dn_qwen_single_shot_thinking_75_20260415` | 0.0000 | 0.0000 | 0.0162 | 0.0162 |
+| `hotpotqa_aws_g4dn_thinking_75_20260407_retry4b` | 0.3836 | 0.3733 | 0.5774 | 0.5620 |
 
 ## Behavior Metrics
 
-| System | decomposition_rate | evidence_grounding_rate | premature_finalization_rate | revision_after_critique_rate | unsupported_claim_rate |
-| --- | --- | --- | --- | --- | --- |
-| committee | 1 | 1 | 0 | 1 | 0 |
-| single_multiturn | N/A | N/A | N/A | N/A | N/A |
-| single_shot | N/A | N/A | N/A | N/A | N/A |
-| single_structured | N/A | N/A | N/A | N/A | N/A |
+Behavior metrics are recorded for the committee pipeline only.
 
-## Comparison
+| Run | decomposition_rate | evidence_grounding_rate | premature_finalization_rate | revision_after_critique_rate | unsupported_claim_rate |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `hotpotqa_aws_g4dn_thinking_75_20260407_retry4b` | 0.8767 | 0.9863 | 0.0000 | 1.0000 | 0.0000 |
 
-| Comparison | Latency Ratio | Token Ratio | answer_em Delta | answer_f1 Delta | supporting_fact_context_coverage Delta | supporting_fact_title_precision Delta | supporting_fact_title_recall Delta |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| committee_vs_single_multiturn | 2.6552 | 3.0536 | 0.5 | 0.6207 | 0 | -0.3333 | -0.3333 |
-| committee_vs_single_shot | 1.3859 | 8.4509 | 0.5 | 0.6273 | 0 | -0.5 | -0.5 |
-| committee_vs_single_structured | 5.1469 | 8.5634 | 0.5 | 0.6281 | 0 | -0.5 | -0.5 |
+## Notes
 
-## Failures
-
-_No failures were recorded in this summary._
+- The April 15 single-shot thinking trace includes `chat_template_kwargs.enable_thinking=true`; sampled outputs begin with `<think>`, confirming the Qwen3 thinking path was active.
+- Single-shot thinking and single-shot non-thinking produced the same aggregate answer metrics and token totals on this benchmark slice.
+- The committee run remains much slower and more token-intensive, but it is the only run in this set with materially nonzero HotpotQA answer accuracy.
+- The committee result should be reported with both completed-trace metrics and conservative full-set metrics because `2/75` examples failed.
