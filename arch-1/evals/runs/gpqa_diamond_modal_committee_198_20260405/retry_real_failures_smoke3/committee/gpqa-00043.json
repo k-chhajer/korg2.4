@@ -1,0 +1,523 @@
+{
+  "run_id": "gpqa-00043",
+  "architecture": "architecture_1_posttrained_committee",
+  "architecture_spec": {
+    "family": "architecture_1",
+    "description": "Architecture 1 retry scaffold on a Modal-hosted Qwen3-8B endpoint with reduced max_tokens to avoid context overflows during failed-task retries.",
+    "specialization_source": "prompt_scaffold_only",
+    "stage_sequence": [
+      "coordinator_plan",
+      "researcher",
+      "analyst",
+      "critic",
+      "coordinator_finalize"
+    ],
+    "paper_reference_role_order": [
+      "coordinator",
+      "researcher",
+      "analyst",
+      "critic",
+      "coordinator"
+    ],
+    "paper_claim_blockers": [
+      "Role specialization source is not set to post_trained_role_specialists, so this config should be treated as a prompt scaffold."
+    ]
+  },
+  "config_name": "qwen3_8b_modal_eval_retry400_abs",
+  "config_path": "/Users/luthiraa/Documents/korg2.4/arch-1/evals/runs/gpqa_diamond_modal_committee_198_20260405/qwen3_8b_modal_eval_retry400_abs.json",
+  "started_at_utc": "2026-04-05T13:56:17.550611+00:00",
+  "total_elapsed_sec": 304.2934251250117,
+  "input": "A benzene ring has a carboxylic acid a carbaldehyde and a cyano group all meta to one another. Ortho to the carboxylic acid are a hydroxyl and a dimethyl amino and para to the carboxylic acid is a methoxy group. The methoxy and the alcohol are also both ortho to the nitrile. What is the correct IUPAC name for this molecule?",
+  "task": {
+    "id": "gpqa-00043",
+    "prompt": "A benzene ring has a carboxylic acid a carbaldehyde and a cyano group all meta to one another. Ortho to the carboxylic acid are a hydroxyl and a dimethyl amino and para to the carboxylic acid is a methoxy group. The methoxy and the alcohol are also both ortho to the nitrile. What is the correct IUPAC name for this molecule?",
+    "domain": "Chemistry",
+    "benchmark_name": "gpqa",
+    "benchmark_split": "eval",
+    "task_type": "multiple_choice",
+    "context": null,
+    "objectives": [],
+    "constraints": [],
+    "deliverable": "Select exactly one answer choice. Start the response with `Answer: <label>` and then briefly justify the choice.",
+    "evaluation_criteria": [
+      "The selected label should match the correct answer choice."
+    ],
+    "references": [],
+    "reference_answers": [],
+    "choices": [
+      {
+        "label": "A",
+        "text": "3-cyano-6-(dimethylamino)-5-formyl-2-hydroxy-4-methoxybenzoic acid"
+      },
+      {
+        "label": "B",
+        "text": "2-(dimethylamino)-3-formyl-4-methoxy-5-cyano-6-hydroxybenzoic acid"
+      },
+      {
+        "label": "C",
+        "text": "2-hydroxy-3-cyano-4-methoxy-5-formyl-6-(dimethylamino)benzoic acid"
+      },
+      {
+        "label": "D",
+        "text": "5-cyano-2-(dimethylamino)-3-formyl-6-hydroxy-4-methoxybenzoic acid"
+      }
+    ],
+    "correct_choice": "A",
+    "checks": {},
+    "metadata": {
+      "source_dataset": "GPQA",
+      "subdomain": "Organic Chemistry"
+    }
+  },
+  "metadata": {
+    "source_dataset": "GPQA",
+    "subdomain": "Organic Chemistry"
+  },
+  "steps": [
+    {
+      "role": "coordinator_plan",
+      "role_specialization": "coordinator",
+      "checkpoint_name": "modal-qwen3-8b-dev-scaffold",
+      "model": "Qwen/Qwen3-8B",
+      "temperature": 0.0,
+      "max_tokens": 400,
+      "system_prompt": "You are the coordinator in a post-trained role-specialized committee of language models.\n\nYour job is to convert the user task into a clean execution brief for downstream agents. You are not the final answerer yet.\n\nRules:\n- Restate the real problem instead of mirroring the wording mechanically.\n- Decompose the task into the smallest useful reasoning units.\n- Identify constraints, evaluation criteria, and failure modes.\n- Tell the researcher exactly what information or evidence would matter.\n- Do not solve the task in full.\n\nReturn exactly these section headers:\n\nProblem Restatement:\nSuccess Criteria:\nPlan:\nRisks and Unknowns:\nResearch Brief:",
+      "local_context_view": [
+        "task_prompt",
+        "task_domain",
+        "benchmark_name",
+        "benchmark_split",
+        "task_type",
+        "task_context",
+        "task_objectives",
+        "task_constraints",
+        "answer_choices",
+        "deliverable",
+        "evaluation_criteria",
+        "provided_references"
+      ],
+      "output_schema": [
+        "Problem Restatement",
+        "Success Criteria",
+        "Plan",
+        "Risks and Unknowns",
+        "Research Brief"
+      ],
+      "schema_validation": {
+        "required_headers": [
+          "Problem Restatement",
+          "Success Criteria",
+          "Plan",
+          "Risks and Unknowns",
+          "Research Brief"
+        ],
+        "present_headers": [],
+        "missing_headers": [
+          "Problem Restatement",
+          "Success Criteria",
+          "Plan",
+          "Risks and Unknowns",
+          "Research Brief"
+        ],
+        "is_valid": false,
+        "sections": {
+          "Problem Restatement": "",
+          "Success Criteria": "",
+          "Plan": "",
+          "Risks and Unknowns": "",
+          "Research Brief": ""
+        }
+      },
+      "user_prompt": "<task_prompt>\nA benzene ring has a carboxylic acid a carbaldehyde and a cyano group all meta to one another. Ortho to the carboxylic acid are a hydroxyl and a dimethyl amino and para to the carboxylic acid is a methoxy group. The methoxy and the alcohol are also both ortho to the nitrile. What is the correct IUPAC name for this molecule?\n</task_prompt>\n\n<task_domain>\nChemistry\n</task_domain>\n\n<benchmark_name>\ngpqa\n</benchmark_name>\n\n<benchmark_split>\neval\n</benchmark_split>\n\n<task_type>\nmultiple_choice\n</task_type>\n\n<answer_choices>\n- A. 3-cyano-6-(dimethylamino)-5-formyl-2-hydroxy-4-methoxybenzoic acid\n- B. 2-(dimethylamino)-3-formyl-4-methoxy-5-cyano-6-hydroxybenzoic acid\n- C. 2-hydroxy-3-cyano-4-methoxy-5-formyl-6-(dimethylamino)benzoic acid\n- D. 5-cyano-2-(dimethylamino)-3-formyl-6-hydroxy-4-methoxybenzoic acid\n</answer_choices>\n\n<deliverable>\nSelect exactly one answer choice. Start the response with `Answer: <label>` and then briefly justify the choice.\n</deliverable>\n\n<evaluation_criteria>\n- The selected label should match the correct answer choice.\n</evaluation_criteria>\n\nYou are stage 1 of a fixed committee pipeline.\n\nDecompose the task for downstream specialists. Do not solve it yet.\n\nReturn exactly these section headers in order: Problem Restatement:, Success Criteria:, Plan:, Risks and Unknowns:, Research Brief:.",
+      "response": "<think>\nOkay, let's tackle this IUPAC naming problem. The user provided a complex molecule with several functional groups arranged in specific positions on a benzene ring. The task is to determine the correct IUPAC name from the given options.\n\nFirst, I need to visualize the structure. The benzene ring has a carboxylic acid group. The positions of other groups are described relative to this carboxylic acid. The carbaldehyde, cyano group, and hydroxyl are all meta to the carboxylic acid. That means they are each two positions away from the carboxylic acid. Then, ortho to the carboxylic acid are a hydroxyl and a dimethyl amino group. Wait, but the hydroxyl is also mentioned as being ortho to the nitrile. Hmm, that might be a key point. Also, the methoxy group is para to the carboxylic acid. \n\nWait, the problem states that the methoxy and the alcohol (which I think is the hydroxyl) are both ortho to the nitrile. So the nitrile (cyano group) is in a position where both methoxy and hydroxyl are ortho to it. Let me try to map this out. \n\nLet me start by assigning positions. Let's assume the carboxylic acid is at position 1. Then, the groups meta to it would be positions 3, 4, and 5? Wait, benzene has six positions. If the carboxylic acid is at position 1, then meta positions are 3 and 5 (since meta is two positions away). Wait, maybe I need to clarify. In a benzene ring, positions are numbered 1 through 6. If the carboxylic acid is at position 1, then the meta positions would be 3 and 5. But the problem says that the",
+      "elapsed_sec": 200.34444683400216,
+      "usage": {
+        "prompt_tokens": 526,
+        "total_tokens": 926,
+        "completion_tokens": 400,
+        "prompt_tokens_details": null
+      }
+    },
+    {
+      "role": "researcher",
+      "role_specialization": "researcher",
+      "checkpoint_name": "modal-qwen3-8b-dev-scaffold",
+      "model": "Qwen/Qwen3-8B",
+      "temperature": 0.0,
+      "max_tokens": 400,
+      "system_prompt": "You are the researcher in a post-trained role-specialized committee of language models.\n\nYour job is to expand the coordinator brief into useful evidence, options, assumptions, and unresolved questions that an analyst can use.\n\nRules:\n- Surface facts, relevant distinctions, and plausible alternatives.\n- Be explicit about assumptions when facts are unavailable.\n- Separate observation from inference.\n- Do not write the final polished answer.\n- Do not ignore uncertainty.\n\nReturn exactly these section headers:\n\nEvidence and Observations:\nOptions:\nAssumptions:\nOpen Questions:\nResearch Handoff:",
+      "local_context_view": [
+        "task_prompt",
+        "task_domain",
+        "benchmark_name",
+        "benchmark_split",
+        "task_type",
+        "task_context",
+        "task_objectives",
+        "task_constraints",
+        "answer_choices",
+        "deliverable",
+        "evaluation_criteria",
+        "provided_references",
+        "coordinator_plan"
+      ],
+      "output_schema": [
+        "Evidence and Observations",
+        "Options",
+        "Assumptions",
+        "Open Questions",
+        "Research Handoff"
+      ],
+      "schema_validation": {
+        "required_headers": [
+          "Evidence and Observations",
+          "Options",
+          "Assumptions",
+          "Open Questions",
+          "Research Handoff"
+        ],
+        "present_headers": [],
+        "missing_headers": [
+          "Evidence and Observations",
+          "Options",
+          "Assumptions",
+          "Open Questions",
+          "Research Handoff"
+        ],
+        "is_valid": false,
+        "sections": {
+          "Evidence and Observations": "",
+          "Options": "",
+          "Assumptions": "",
+          "Open Questions": "",
+          "Research Handoff": ""
+        }
+      },
+      "user_prompt": "<task_prompt>\nA benzene ring has a carboxylic acid a carbaldehyde and a cyano group all meta to one another. Ortho to the carboxylic acid are a hydroxyl and a dimethyl amino and para to the carboxylic acid is a methoxy group. The methoxy and the alcohol are also both ortho to the nitrile. What is the correct IUPAC name for this molecule?\n</task_prompt>\n\n<task_domain>\nChemistry\n</task_domain>\n\n<benchmark_name>\ngpqa\n</benchmark_name>\n\n<benchmark_split>\neval\n</benchmark_split>\n\n<task_type>\nmultiple_choice\n</task_type>\n\n<answer_choices>\n- A. 3-cyano-6-(dimethylamino)-5-formyl-2-hydroxy-4-methoxybenzoic acid\n- B. 2-(dimethylamino)-3-formyl-4-methoxy-5-cyano-6-hydroxybenzoic acid\n- C. 2-hydroxy-3-cyano-4-methoxy-5-formyl-6-(dimethylamino)benzoic acid\n- D. 5-cyano-2-(dimethylamino)-3-formyl-6-hydroxy-4-methoxybenzoic acid\n</answer_choices>\n\n<deliverable>\nSelect exactly one answer choice. Start the response with `Answer: <label>` and then briefly justify the choice.\n</deliverable>\n\n<evaluation_criteria>\n- The selected label should match the correct answer choice.\n</evaluation_criteria>\n\n<coordinator_plan>\n<think>\nOkay, let's tackle this IUPAC naming problem. The user provided a complex molecule with several functional groups arranged in specific positions on a benzene ring. The task is to determine the correct IUPAC name from the given options.\n\nFirst, I need to visualize the structure. The benzene ring has a carboxylic acid group. The positions of other groups are described relative to this carboxylic acid. The carbaldehyde, cyano group, and hydroxyl are all meta to the carboxylic acid. That means they are each two positions away from the carboxylic acid. Then, ortho to the carboxylic acid are a hydroxyl and a dimethyl amino group. Wait, but the hydroxyl is also mentioned as being ortho to the nitrile. Hmm, that might be a key point. Also, the methoxy group is para to the carboxylic acid. \n\nWait, the problem states that the methoxy and the alcohol (which I think is the hydroxyl) are both ortho to the nitrile. So the nitrile (cyano group) is in a position where both methoxy and hydroxyl are ortho to it. Let me try to map this out. \n\nLet me start by assigning positions. Let's assume the carboxylic acid is at position 1. Then, the groups meta to it would be positions 3, 4, and 5? Wait, benzene has six positions. If the carboxylic acid is at position 1, then meta positions are 3 and 5 (since meta is two positions away). Wait, maybe I need to clarify. In a benzene ring, positions are numbered 1 through 6. If the carboxylic acid is at position 1, then the meta positions would be 3 and 5. But the problem says that the\n</coordinator_plan>\n\nYou are stage 2 of a fixed committee pipeline.\n\nGather candidate evidence, relevant distinctions, and unresolved questions.\n\nReturn exactly these section headers in order: Evidence and Observations:, Options:, Assumptions:, Open Questions:, Research Handoff:.",
+      "response": "<think>\nOkay, let's break this down. The user is asking for the correct IUPAC name of a complex benzene derivative. The molecule has a carboxylic acid, carbaldehyde, cyano group, hydroxyl, dimethylamino, and methoxy groups arranged in specific positions.\n\nFirst, I need to map out the positions. The carboxylic acid is the main functional group, so that's the starting point. The problem states that the carbaldehyde, cyano, and hydroxyl are all meta to the carboxylic acid. That means they are each two positions away. But wait, benzene has six positions. If the carboxylic acid is at position 1, then meta positions would be 3 and 5. But the problem mentions three groups (carbaldehyde, cyano, hydroxyl) all meta to the carboxylic acid. That seems conflicting because there are only two meta positions. Maybe there's a mistake here, or perhaps the groups are arranged in a way that they are all meta in different contexts. Wait, maybe the carboxylic acid is at position 1, and the other groups are arranged such that each of the three groups (carbaldehyde, cyano, hydroxyl) are meta to the carboxylic acid. But that would require three positions, which isn't possible. Hmm, this might be a key point. Alternatively, maybe the carboxylic acid is at position 1, and the other groups are arranged such that each of the three groups (carbaldehyde, cyano, hydroxyl) are in positions that are meta to the carboxylic acid. Wait, but that would require three positions, which isn't possible. So perhaps the problem is using \"meta\" in a different way, or there's a misunderstanding. Alternatively, maybe the carboxylic acid is at position 1,",
+      "elapsed_sec": 25.682166667014826,
+      "usage": {
+        "prompt_tokens": 917,
+        "total_tokens": 1317,
+        "completion_tokens": 400,
+        "prompt_tokens_details": null
+      }
+    },
+    {
+      "role": "analyst",
+      "role_specialization": "analyst",
+      "checkpoint_name": "modal-qwen3-8b-dev-scaffold",
+      "model": "Qwen/Qwen3-8B",
+      "temperature": 0.0,
+      "max_tokens": 400,
+      "system_prompt": "You are the analyst in a post-trained role-specialized committee of language models.\n\nYour job is to synthesize the user task, the coordinator brief, and the researcher notes into the strongest draft answer available.\n\nRules:\n- Produce a clear answer, not a loose brainstorm.\n- Preserve important caveats, but do not hide behind them.\n- Resolve ambiguity where possible.\n- Make the draft usable by the final coordinator.\n\nReturn exactly these section headers:\n\nCore Answer:\nReasoning:\nCaveats:\nDraft Deliverable:",
+      "local_context_view": [
+        "task_prompt",
+        "task_domain",
+        "benchmark_name",
+        "benchmark_split",
+        "task_type",
+        "task_context",
+        "task_objectives",
+        "task_constraints",
+        "answer_choices",
+        "deliverable",
+        "evaluation_criteria",
+        "provided_references",
+        "coordinator_plan",
+        "researcher_notes"
+      ],
+      "output_schema": [
+        "Core Answer",
+        "Reasoning",
+        "Caveats",
+        "Draft Deliverable"
+      ],
+      "schema_validation": {
+        "required_headers": [
+          "Core Answer",
+          "Reasoning",
+          "Caveats",
+          "Draft Deliverable"
+        ],
+        "present_headers": [],
+        "missing_headers": [
+          "Core Answer",
+          "Reasoning",
+          "Caveats",
+          "Draft Deliverable"
+        ],
+        "is_valid": false,
+        "sections": {
+          "Core Answer": "",
+          "Reasoning": "",
+          "Caveats": "",
+          "Draft Deliverable": ""
+        }
+      },
+      "user_prompt": "<task_prompt>\nA benzene ring has a carboxylic acid a carbaldehyde and a cyano group all meta to one another. Ortho to the carboxylic acid are a hydroxyl and a dimethyl amino and para to the carboxylic acid is a methoxy group. The methoxy and the alcohol are also both ortho to the nitrile. What is the correct IUPAC name for this molecule?\n</task_prompt>\n\n<task_domain>\nChemistry\n</task_domain>\n\n<benchmark_name>\ngpqa\n</benchmark_name>\n\n<benchmark_split>\neval\n</benchmark_split>\n\n<task_type>\nmultiple_choice\n</task_type>\n\n<answer_choices>\n- A. 3-cyano-6-(dimethylamino)-5-formyl-2-hydroxy-4-methoxybenzoic acid\n- B. 2-(dimethylamino)-3-formyl-4-methoxy-5-cyano-6-hydroxybenzoic acid\n- C. 2-hydroxy-3-cyano-4-methoxy-5-formyl-6-(dimethylamino)benzoic acid\n- D. 5-cyano-2-(dimethylamino)-3-formyl-6-hydroxy-4-methoxybenzoic acid\n</answer_choices>\n\n<deliverable>\nSelect exactly one answer choice. Start the response with `Answer: <label>` and then briefly justify the choice.\n</deliverable>\n\n<evaluation_criteria>\n- The selected label should match the correct answer choice.\n</evaluation_criteria>\n\n<coordinator_plan>\n<think>\nOkay, let's tackle this IUPAC naming problem. The user provided a complex molecule with several functional groups arranged in specific positions on a benzene ring. The task is to determine the correct IUPAC name from the given options.\n\nFirst, I need to visualize the structure. The benzene ring has a carboxylic acid group. The positions of other groups are described relative to this carboxylic acid. The carbaldehyde, cyano group, and hydroxyl are all meta to the carboxylic acid. That means they are each two positions away from the carboxylic acid. Then, ortho to the carboxylic acid are a hydroxyl and a dimethyl amino group. Wait, but the hydroxyl is also mentioned as being ortho to the nitrile. Hmm, that might be a key point. Also, the methoxy group is para to the carboxylic acid. \n\nWait, the problem states that the methoxy and the alcohol (which I think is the hydroxyl) are both ortho to the nitrile. So the nitrile (cyano group) is in a position where both methoxy and hydroxyl are ortho to it. Let me try to map this out. \n\nLet me start by assigning positions. Let's assume the carboxylic acid is at position 1. Then, the groups meta to it would be positions 3, 4, and 5? Wait, benzene has six positions. If the carboxylic acid is at position 1, then meta positions are 3 and 5 (since meta is two positions away). Wait, maybe I need to clarify. In a benzene ring, positions are numbered 1 through 6. If the carboxylic acid is at position 1, then the meta positions would be 3 and 5. But the problem says that the\n</coordinator_plan>\n\n<researcher_notes>\n<think>\nOkay, let's break this down. The user is asking for the correct IUPAC name of a complex benzene derivative. The molecule has a carboxylic acid, carbaldehyde, cyano group, hydroxyl, dimethylamino, and methoxy groups arranged in specific positions.\n\nFirst, I need to map out the positions. The carboxylic acid is the main functional group, so that's the starting point. The problem states that the carbaldehyde, cyano, and hydroxyl are all meta to the carboxylic acid. That means they are each two positions away. But wait, benzene has six positions. If the carboxylic acid is at position 1, then meta positions would be 3 and 5. But the problem mentions three groups (carbaldehyde, cyano, hydroxyl) all meta to the carboxylic acid. That seems conflicting because there are only two meta positions. Maybe there's a mistake here, or perhaps the groups are arranged in a way that they are all meta in different contexts. Wait, maybe the carboxylic acid is at position 1, and the other groups are arranged such that each of the three groups (carbaldehyde, cyano, hydroxyl) are meta to the carboxylic acid. But that would require three positions, which isn't possible. Hmm, this might be a key point. Alternatively, maybe the carboxylic acid is at position 1, and the other groups are arranged such that each of the three groups (carbaldehyde, cyano, hydroxyl) are in positions that are meta to the carboxylic acid. Wait, but that would require three positions, which isn't possible. So perhaps the problem is using \"meta\" in a different way, or there's a misunderstanding. Alternatively, maybe the carboxylic acid is at position 1,\n</researcher_notes>\n\nYou are stage 3 of a fixed committee pipeline.\n\nConvert the gathered material into a structured reasoning path and tentative solution.\n\nReturn exactly these section headers in order: Core Answer:, Reasoning:, Caveats:, Draft Deliverable:.",
+      "response": "<think>\nOkay, let's tackle this IUPAC naming problem. The molecule has a benzene ring with several functional groups. The key is to determine the correct positions of each group relative to the carboxylic acid, which is the main functional group.\n\nFirst, the carboxylic acid is the primary group, so we'll start by assigning it position 1. The problem states that the carbaldehyde, cyano group, and hydroxyl are all meta to the carboxylic acid. Wait, meta means two positions away. But a benzene ring has six positions. If the carboxylic acid is at position 1, the meta positions would be 3 and 5. But there are three groups mentioned here (carbaldehyde, cyano, hydroxyl), which can't all be in two positions. This seems conflicting. Maybe there's a mistake in the problem statement, or perhaps the groups are arranged in a way that they are all meta in different contexts. Alternatively, maybe the carboxylic acid is at position 1, and the other groups are arranged such that each of the three groups (carbaldehyde, cyano, hydroxyl) are in positions that are meta to the carboxylic acid. Wait, that's not possible. So perhaps the problem is using \"meta\" in a different way, or there's a misunderstanding. Alternatively, maybe the carboxylic acid is at position 1, and the other groups are arranged such that each of the three groups (carbaldehyde, cyano, hydroxyl) are in positions that are meta to the carboxylic acid. But that would require three positions, which isn't possible. Hmm, this is confusing. Let me check the other parts of the problem.\n\nThe problem also says that ortho to the carboxylic acid are a hydroxyl and a dimethyl amino group. So if the carbox",
+      "elapsed_sec": 25.833566749992315,
+      "usage": {
+        "prompt_tokens": 1317,
+        "total_tokens": 1717,
+        "completion_tokens": 400,
+        "prompt_tokens_details": null
+      }
+    },
+    {
+      "role": "critic",
+      "role_specialization": "critic",
+      "checkpoint_name": "modal-qwen3-8b-dev-scaffold",
+      "model": "Qwen/Qwen3-8B",
+      "temperature": 0.0,
+      "max_tokens": 400,
+      "system_prompt": "You are the critic in a post-trained role-specialized committee of language models.\n\nYour job is to attack the analyst draft for missing evidence, weak reasoning, unsupported claims, and practical flaws.\n\nRules:\n- Focus on substantive defects, not stylistic noise.\n- Distinguish major issues from minor issues.\n- Call out where the draft overreaches.\n- Request concrete revisions.\n- Do not fully rewrite the answer unless the draft is unusable.\n\nReturn exactly these section headers:\n\nMajor Issues:\nMinor Issues:\nMissing Evidence:\nRequired Revisions:",
+      "local_context_view": [
+        "task_prompt",
+        "task_domain",
+        "benchmark_name",
+        "benchmark_split",
+        "task_type",
+        "task_context",
+        "task_objectives",
+        "task_constraints",
+        "answer_choices",
+        "deliverable",
+        "evaluation_criteria",
+        "provided_references",
+        "coordinator_plan",
+        "researcher_notes",
+        "analyst_draft"
+      ],
+      "output_schema": [
+        "Major Issues",
+        "Minor Issues",
+        "Missing Evidence",
+        "Required Revisions"
+      ],
+      "schema_validation": {
+        "required_headers": [
+          "Major Issues",
+          "Minor Issues",
+          "Missing Evidence",
+          "Required Revisions"
+        ],
+        "present_headers": [],
+        "missing_headers": [
+          "Major Issues",
+          "Minor Issues",
+          "Missing Evidence",
+          "Required Revisions"
+        ],
+        "is_valid": false,
+        "sections": {
+          "Major Issues": "",
+          "Minor Issues": "",
+          "Missing Evidence": "",
+          "Required Revisions": ""
+        }
+      },
+      "user_prompt": "<task_prompt>\nA benzene ring has a carboxylic acid a carbaldehyde and a cyano group all meta to one another. Ortho to the carboxylic acid are a hydroxyl and a dimethyl amino and para to the carboxylic acid is a methoxy group. The methoxy and the alcohol are also both ortho to the nitrile. What is the correct IUPAC name for this molecule?\n</task_prompt>\n\n<task_domain>\nChemistry\n</task_domain>\n\n<benchmark_name>\ngpqa\n</benchmark_name>\n\n<benchmark_split>\neval\n</benchmark_split>\n\n<task_type>\nmultiple_choice\n</task_type>\n\n<answer_choices>\n- A. 3-cyano-6-(dimethylamino)-5-formyl-2-hydroxy-4-methoxybenzoic acid\n- B. 2-(dimethylamino)-3-formyl-4-methoxy-5-cyano-6-hydroxybenzoic acid\n- C. 2-hydroxy-3-cyano-4-methoxy-5-formyl-6-(dimethylamino)benzoic acid\n- D. 5-cyano-2-(dimethylamino)-3-formyl-6-hydroxy-4-methoxybenzoic acid\n</answer_choices>\n\n<deliverable>\nSelect exactly one answer choice. Start the response with `Answer: <label>` and then briefly justify the choice.\n</deliverable>\n\n<evaluation_criteria>\n- The selected label should match the correct answer choice.\n</evaluation_criteria>\n\n<coordinator_plan>\n<think>\nOkay, let's tackle this IUPAC naming problem. The user provided a complex molecule with several functional groups arranged in specific positions on a benzene ring. The task is to determine the correct IUPAC name from the given options.\n\nFirst, I need to visualize the structure. The benzene ring has a carboxylic acid group. The positions of other groups are described relative to this carboxylic acid. The carbaldehyde, cyano group, and hydroxyl are all meta to the carboxylic acid. That means they are each two positions away from the carboxylic acid. Then, ortho to the carboxylic acid are a hydroxyl and a dimethyl amino group. Wait, but the hydroxyl is also mentioned as being ortho to the nitrile. Hmm, that might be a key point. Also, the methoxy group is para to the carboxylic acid. \n\nWait, the problem states that the methoxy and the alcohol (which I think is the hydroxyl) are both ortho to the nitrile. So the nitrile (cyano group) is in a position where both methoxy and hydroxyl are ortho to it. Let me try to map this out. \n\nLet me start by assigning positions. Let's assume the carboxylic acid is at position 1. Then, the groups meta to it would be positions 3, 4, and 5? Wait, benzene has six positions. If the carboxylic acid is at position 1, then meta positions are 3 and 5 (since meta is two positions away). Wait, maybe I need to clarify. In a benzene ring, positions are numbered 1 through 6. If the carboxylic acid is at position 1, then the meta positions would be 3 and 5. But the problem says that the\n</coordinator_plan>\n\n<researcher_notes>\n<think>\nOkay, let's break this down. The user is asking for the correct IUPAC name of a complex benzene derivative. The molecule has a carboxylic acid, carbaldehyde, cyano group, hydroxyl, dimethylamino, and methoxy groups arranged in specific positions.\n\nFirst, I need to map out the positions. The carboxylic acid is the main functional group, so that's the starting point. The problem states that the carbaldehyde, cyano, and hydroxyl are all meta to the carboxylic acid. That means they are each two positions away. But wait, benzene has six positions. If the carboxylic acid is at position 1, then meta positions would be 3 and 5. But the problem mentions three groups (carbaldehyde, cyano, hydroxyl) all meta to the carboxylic acid. That seems conflicting because there are only two meta positions. Maybe there's a mistake here, or perhaps the groups are arranged in a way that they are all meta in different contexts. Wait, maybe the carboxylic acid is at position 1, and the other groups are arranged such that each of the three groups (carbaldehyde, cyano, hydroxyl) are meta to the carboxylic acid. But that would require three positions, which isn't possible. Hmm, this might be a key point. Alternatively, maybe the carboxylic acid is at position 1, and the other groups are arranged such that each of the three groups (carbaldehyde, cyano, hydroxyl) are in positions that are meta to the carboxylic acid. Wait, but that would require three positions, which isn't possible. So perhaps the problem is using \"meta\" in a different way, or there's a misunderstanding. Alternatively, maybe the carboxylic acid is at position 1,\n</researcher_notes>\n\n<analyst_draft>\n<think>\nOkay, let's tackle this IUPAC naming problem. The molecule has a benzene ring with several functional groups. The key is to determine the correct positions of each group relative to the carboxylic acid, which is the main functional group.\n\nFirst, the carboxylic acid is the primary group, so we'll start by assigning it position 1. The problem states that the carbaldehyde, cyano group, and hydroxyl are all meta to the carboxylic acid. Wait, meta means two positions away. But a benzene ring has six positions. If the carboxylic acid is at position 1, the meta positions would be 3 and 5. But there are three groups mentioned here (carbaldehyde, cyano, hydroxyl), which can't all be in two positions. This seems conflicting. Maybe there's a mistake in the problem statement, or perhaps the groups are arranged in a way that they are all meta in different contexts. Alternatively, maybe the carboxylic acid is at position 1, and the other groups are arranged such that each of the three groups (carbaldehyde, cyano, hydroxyl) are in positions that are meta to the carboxylic acid. Wait, that's not possible. So perhaps the problem is using \"meta\" in a different way, or there's a misunderstanding. Alternatively, maybe the carboxylic acid is at position 1, and the other groups are arranged such that each of the three groups (carbaldehyde, cyano, hydroxyl) are in positions that are meta to the carboxylic acid. But that would require three positions, which isn't possible. Hmm, this is confusing. Let me check the other parts of the problem.\n\nThe problem also says that ortho to the carboxylic acid are a hydroxyl and a dimethyl amino group. So if the carbox\n</analyst_draft>\n\nYou are stage 4 of a fixed committee pipeline.\n\nStress-test the candidate solution, flag unsupported jumps, and request concrete revisions.\n\nReturn exactly these section headers in order: Major Issues:, Minor Issues:, Missing Evidence:, Required Revisions:.",
+      "response": "<think>\nOkay, let's dive into this. The user is asking for the correct IUPAC name of a complex benzene derivative. The molecule has a carboxylic acid, carbaldehyde, cyano group, hydroxyl, dimethylamino, and methoxy groups arranged in specific positions. The answer choices are A, B, C, D.\n\nFirst, I need to map out the positions correctly. The carboxylic acid is the main functional group, so it's the first in the name. The problem states that the carbaldehyde, cyano, and hydroxyl are all meta to the carboxylic acid. Wait, meta means two positions away. But a benzene ring has six positions. If the carboxylic acid is at position 1, the meta positions would be 3 and 5. But there are three groups mentioned here (carbaldehyde, cyano, hydroxyl), which can't all be in two positions. That's a problem. Maybe the problem is using \"meta\" in a different way, or there's a mistake. Alternatively, perhaps the groups are arranged such that each of the three groups is meta to the carboxylic acid in different contexts. But that doesn't make sense. So this might be a major issue.\n\nNext, the problem says that ortho to the carboxylic acid are a hydroxyl and a dimethyl amino group. So if the carboxylic acid is at position 1, the ortho positions would be 2 and 6. But the hydroxyl and dimethyl amino are both ortho. That would mean positions 2 and 6 have those groups. But then the problem also mentions that the methoxy and the alcohol (hydroxyl) are both ortho to the nitrile. Wait, the nitrile is the cyano group. So the cyano group is in a position where",
+      "elapsed_sec": 26.062303250015248,
+      "usage": {
+        "prompt_tokens": 1736,
+        "total_tokens": 2136,
+        "completion_tokens": 400,
+        "prompt_tokens_details": null
+      }
+    },
+    {
+      "role": "coordinator_finalize",
+      "role_specialization": "coordinator",
+      "checkpoint_name": "modal-qwen3-8b-dev-scaffold",
+      "model": "Qwen/Qwen3-8B",
+      "temperature": 0.0,
+      "max_tokens": 400,
+      "system_prompt": "You are the final coordinator in a post-trained role-specialized committee of language models.\n\nYour job is to produce the final answer after reading the earlier plan, the research notes, the analyst draft, and the critic feedback.\n\nRules:\n- Keep the strongest parts of the analyst draft.\n- Fix valid issues raised by the critic.\n- Remove unsupported claims.\n- Produce one final answer that can stand on its own.\n- Include residual risks only if they materially affect confidence or deployment.\n\nReturn exactly these section headers:\n\nFinal Answer:\nDecision Rationale:\nResidual Risks:",
+      "local_context_view": [
+        "task_prompt",
+        "task_domain",
+        "benchmark_name",
+        "benchmark_split",
+        "task_type",
+        "task_context",
+        "task_objectives",
+        "task_constraints",
+        "answer_choices",
+        "deliverable",
+        "evaluation_criteria",
+        "provided_references",
+        "coordinator_plan",
+        "researcher_notes",
+        "analyst_draft",
+        "critic_feedback"
+      ],
+      "output_schema": [
+        "Final Answer",
+        "Decision Rationale",
+        "Residual Risks"
+      ],
+      "schema_validation": {
+        "required_headers": [
+          "Final Answer",
+          "Decision Rationale",
+          "Residual Risks"
+        ],
+        "present_headers": [],
+        "missing_headers": [
+          "Final Answer",
+          "Decision Rationale",
+          "Residual Risks"
+        ],
+        "is_valid": false,
+        "sections": {
+          "Final Answer": "",
+          "Decision Rationale": "",
+          "Residual Risks": ""
+        }
+      },
+      "user_prompt": "<task_prompt>\nA benzene ring has a carboxylic acid a carbaldehyde and a cyano group all meta to one another. Ortho to the carboxylic acid are a hydroxyl and a dimethyl amino and para to the carboxylic acid is a methoxy group. The methoxy and the alcohol are also both ortho to the nitrile. What is the correct IUPAC name for this molecule?\n</task_prompt>\n\n<task_domain>\nChemistry\n</task_domain>\n\n<benchmark_name>\ngpqa\n</benchmark_name>\n\n<benchmark_split>\neval\n</benchmark_split>\n\n<task_type>\nmultiple_choice\n</task_type>\n\n<answer_choices>\n- A. 3-cyano-6-(dimethylamino)-5-formyl-2-hydroxy-4-methoxybenzoic acid\n- B. 2-(dimethylamino)-3-formyl-4-methoxy-5-cyano-6-hydroxybenzoic acid\n- C. 2-hydroxy-3-cyano-4-methoxy-5-formyl-6-(dimethylamino)benzoic acid\n- D. 5-cyano-2-(dimethylamino)-3-formyl-6-hydroxy-4-methoxybenzoic acid\n</answer_choices>\n\n<deliverable>\nSelect exactly one answer choice. Start the response with `Answer: <label>` and then briefly justify the choice.\n</deliverable>\n\n<evaluation_criteria>\n- The selected label should match the correct answer choice.\n</evaluation_criteria>\n\n<coordinator_plan>\n<think>\nOkay, let's tackle this IUPAC naming problem. The user provided a complex molecule with several functional groups arranged in specific positions on a benzene ring. The task is to determine the correct IUPAC name from the given options.\n\nFirst, I need to visualize the structure. The benzene ring has a carboxylic acid group. The positions of other groups are described relative to this carboxylic acid. The carbaldehyde, cyano group, and hydroxyl are all meta to the carboxylic acid. That means they are each two positions away from the carboxylic acid. Then, ortho to the carboxylic acid are a hydroxyl and a dimethyl amino group. Wait, but the hydroxyl is also mentioned as being ortho to the nitrile. Hmm, that might be a key point. Also, the methoxy group is para to the carboxylic acid. \n\nWait, the problem states that the methoxy and the alcohol (which I think is the hydroxyl) are both ortho to the nitrile. So the nitrile (cyano group) is in a position where both methoxy and hydroxyl are ortho to it. Let me try to map this out. \n\nLet me start by assigning positions. Let's assume the carboxylic acid is at position 1. Then, the groups meta to it would be positions 3, 4, and 5? Wait, benzene has six positions. If the carboxylic acid is at position 1, then meta positions are 3 and 5 (since meta is two positions away). Wait, maybe I need to clarify. In a benzene ring, positions are numbered 1 through 6. If the carboxylic acid is at position 1, then the meta positions would be 3 and 5. But the problem says that the\n</coordinator_plan>\n\n<researcher_notes>\n<think>\nOkay, let's break this down. The user is asking for the correct IUPAC name of a complex benzene derivative. The molecule has a carboxylic acid, carbaldehyde, cyano group, hydroxyl, dimethylamino, and methoxy groups arranged in specific positions.\n\nFirst, I need to map out the positions. The carboxylic acid is the main functional group, so that's the starting point. The problem states that the carbaldehyde, cyano, and hydroxyl are all meta to the carboxylic acid. That means they are each two positions away. But wait, benzene has six positions. If the carboxylic acid is at position 1, then meta positions would be 3 and 5. But the problem mentions three groups (carbaldehyde, cyano, hydroxyl) all meta to the carboxylic acid. That seems conflicting because there are only two meta positions. Maybe there's a mistake here, or perhaps the groups are arranged in a way that they are all meta in different contexts. Wait, maybe the carboxylic acid is at position 1, and the other groups are arranged such that each of the three groups (carbaldehyde, cyano, hydroxyl) are meta to the carboxylic acid. But that would require three positions, which isn't possible. Hmm, this might be a key point. Alternatively, maybe the carboxylic acid is at position 1, and the other groups are arranged such that each of the three groups (carbaldehyde, cyano, hydroxyl) are in positions that are meta to the carboxylic acid. Wait, but that would require three positions, which isn't possible. So perhaps the problem is using \"meta\" in a different way, or there's a misunderstanding. Alternatively, maybe the carboxylic acid is at position 1,\n</researcher_notes>\n\n<analyst_draft>\n<think>\nOkay, let's tackle this IUPAC naming problem. The molecule has a benzene ring with several functional groups. The key is to determine the correct positions of each group relative to the carboxylic acid, which is the main functional group.\n\nFirst, the carboxylic acid is the primary group, so we'll start by assigning it position 1. The problem states that the carbaldehyde, cyano group, and hydroxyl are all meta to the carboxylic acid. Wait, meta means two positions away. But a benzene ring has six positions. If the carboxylic acid is at position 1, the meta positions would be 3 and 5. But there are three groups mentioned here (carbaldehyde, cyano, hydroxyl), which can't all be in two positions. This seems conflicting. Maybe there's a mistake in the problem statement, or perhaps the groups are arranged in a way that they are all meta in different contexts. Alternatively, maybe the carboxylic acid is at position 1, and the other groups are arranged such that each of the three groups (carbaldehyde, cyano, hydroxyl) are in positions that are meta to the carboxylic acid. Wait, that's not possible. So perhaps the problem is using \"meta\" in a different way, or there's a misunderstanding. Alternatively, maybe the carboxylic acid is at position 1, and the other groups are arranged such that each of the three groups (carbaldehyde, cyano, hydroxyl) are in positions that are meta to the carboxylic acid. But that would require three positions, which isn't possible. Hmm, this is confusing. Let me check the other parts of the problem.\n\nThe problem also says that ortho to the carboxylic acid are a hydroxyl and a dimethyl amino group. So if the carbox\n</analyst_draft>\n\n<critic_feedback>\n<think>\nOkay, let's dive into this. The user is asking for the correct IUPAC name of a complex benzene derivative. The molecule has a carboxylic acid, carbaldehyde, cyano group, hydroxyl, dimethylamino, and methoxy groups arranged in specific positions. The answer choices are A, B, C, D.\n\nFirst, I need to map out the positions correctly. The carboxylic acid is the main functional group, so it's the first in the name. The problem states that the carbaldehyde, cyano, and hydroxyl are all meta to the carboxylic acid. Wait, meta means two positions away. But a benzene ring has six positions. If the carboxylic acid is at position 1, the meta positions would be 3 and 5. But there are three groups mentioned here (carbaldehyde, cyano, hydroxyl), which can't all be in two positions. That's a problem. Maybe the problem is using \"meta\" in a different way, or there's a mistake. Alternatively, perhaps the groups are arranged such that each of the three groups is meta to the carboxylic acid in different contexts. But that doesn't make sense. So this might be a major issue.\n\nNext, the problem says that ortho to the carboxylic acid are a hydroxyl and a dimethyl amino group. So if the carboxylic acid is at position 1, the ortho positions would be 2 and 6. But the hydroxyl and dimethyl amino are both ortho. That would mean positions 2 and 6 have those groups. But then the problem also mentions that the methoxy and the alcohol (hydroxyl) are both ortho to the nitrile. Wait, the nitrile is the cyano group. So the cyano group is in a position where\n</critic_feedback>\n\nYou are stage 5 of a fixed committee pipeline.\n\nDecide whether to accept the draft, integrate the valid critique, and produce the final answer.\n\nReturn exactly these section headers in order: Final Answer:, Decision Rationale:, Residual Risks:.",
+      "response": "<think>\nOkay, let's try to figure this out. The user is asking for the correct IUPAC name of a benzene ring with several functional groups. The key is to determine the correct positions of each group relative to the carboxylic acid, which is the main functional group.\n\nFirst, the carboxylic acid is the primary group, so we'll start by assigning it position 1. The problem states that the carbaldehyde, cyano group, and hydroxyl are all meta to the carboxylic acid. Wait, meta means two positions away. But a benzene ring has six positions. If the carboxylic acid is at position 1, the meta positions would be 3 and 5. But there are three groups mentioned here (carbaldehyde, cyano, hydroxyl), which can't all be in two positions. That seems conflicting. Maybe there's a mistake in the problem statement, or perhaps the groups are arranged in a way that they are all meta in different contexts. Alternatively, maybe the carboxylic acid is at position 1, and the other groups are arranged such that each of the three groups (carbaldehyde, cyano, hydroxyl) are in positions that are meta to the carboxylic acid. But that would require three positions, which isn't possible. Hmm, this is confusing. Let me check the other parts of the problem.\n\nThe problem also says that ortho to the carboxylic acid are a hydroxyl and a dimethyl amino group. So if the carboxylic acid is at position 1, the ortho positions would be 2 and 6. But the hydroxyl and dimethyl amino are both ortho. That would mean positions 2 and 6 have those groups. But then the problem also mentions that the methoxy and the alcohol (hydroxyl) are both ortho to the nitr",
+      "elapsed_sec": 26.360806249955203,
+      "usage": {
+        "prompt_tokens": 2154,
+        "total_tokens": 2554,
+        "completion_tokens": 400,
+        "prompt_tokens_details": null
+      }
+    }
+  ],
+  "final_stage": "<think>\nOkay, let's try to figure this out. The user is asking for the correct IUPAC name of a benzene ring with several functional groups. The key is to determine the correct positions of each group relative to the carboxylic acid, which is the main functional group.\n\nFirst, the carboxylic acid is the primary group, so we'll start by assigning it position 1. The problem states that the carbaldehyde, cyano group, and hydroxyl are all meta to the carboxylic acid. Wait, meta means two positions away. But a benzene ring has six positions. If the carboxylic acid is at position 1, the meta positions would be 3 and 5. But there are three groups mentioned here (carbaldehyde, cyano, hydroxyl), which can't all be in two positions. That seems conflicting. Maybe there's a mistake in the problem statement, or perhaps the groups are arranged in a way that they are all meta in different contexts. Alternatively, maybe the carboxylic acid is at position 1, and the other groups are arranged such that each of the three groups (carbaldehyde, cyano, hydroxyl) are in positions that are meta to the carboxylic acid. But that would require three positions, which isn't possible. Hmm, this is confusing. Let me check the other parts of the problem.\n\nThe problem also says that ortho to the carboxylic acid are a hydroxyl and a dimethyl amino group. So if the carboxylic acid is at position 1, the ortho positions would be 2 and 6. But the hydroxyl and dimethyl amino are both ortho. That would mean positions 2 and 6 have those groups. But then the problem also mentions that the methoxy and the alcohol (hydroxyl) are both ortho to the nitr",
+  "final_answer": "<think>\nOkay, let's try to figure this out. The user is asking for the correct IUPAC name of a benzene ring with several functional groups. The key is to determine the correct positions of each group relative to the carboxylic acid, which is the main functional group.\n\nFirst, the carboxylic acid is the primary group, so we'll start by assigning it position 1. The problem states that the carbaldehyde, cyano group, and hydroxyl are all meta to the carboxylic acid. Wait, meta means two positions away. But a benzene ring has six positions. If the carboxylic acid is at position 1, the meta positions would be 3 and 5. But there are three groups mentioned here (carbaldehyde, cyano, hydroxyl), which can't all be in two positions. That seems conflicting. Maybe there's a mistake in the problem statement, or perhaps the groups are arranged in a way that they are all meta in different contexts. Alternatively, maybe the carboxylic acid is at position 1, and the other groups are arranged such that each of the three groups (carbaldehyde, cyano, hydroxyl) are in positions that are meta to the carboxylic acid. But that would require three positions, which isn't possible. Hmm, this is confusing. Let me check the other parts of the problem.\n\nThe problem also says that ortho to the carboxylic acid are a hydroxyl and a dimethyl amino group. So if the carboxylic acid is at position 1, the ortho positions would be 2 and 6. But the hydroxyl and dimethyl amino are both ortho. That would mean positions 2 and 6 have those groups. But then the problem also mentions that the methoxy and the alcohol (hydroxyl) are both ortho to the nitr",
+  "evaluation": {
+    "domain": "Chemistry",
+    "deliverable": "Select exactly one answer choice. Start the response with `Answer: <label>` and then briefly justify the choice.",
+    "evaluation_criteria": [
+      "The selected label should match the correct answer choice."
+    ],
+    "reference_count": 0,
+    "check_count": 0,
+    "passed": null,
+    "score": null,
+    "answer_word_count": 284,
+    "answer_char_count": 1634,
+    "checks": [],
+    "reference": {
+      "benchmark_name": "gpqa",
+      "benchmark_split": "eval",
+      "task_type": "multiple_choice",
+      "metrics": {
+        "choice_accuracy": 0.0
+      },
+      "scored_answer": null,
+      "predicted_choice": null,
+      "choice_count": 4,
+      "reference_answer_count": 0
+    }
+  },
+  "summary": {
+    "stage_count": 5,
+    "model_call_count": 5,
+    "per_role_elapsed_sec": {
+      "coordinator_plan": 200.34444683400216,
+      "researcher": 25.682166667014826,
+      "analyst": 25.833566749992315,
+      "critic": 26.062303250015248,
+      "coordinator_finalize": 26.360806249955203
+    },
+    "per_role_usage": {
+      "coordinator_plan": {
+        "prompt_tokens": 526,
+        "total_tokens": 926,
+        "completion_tokens": 400,
+        "prompt_tokens_details": null
+      },
+      "researcher": {
+        "prompt_tokens": 917,
+        "total_tokens": 1317,
+        "completion_tokens": 400,
+        "prompt_tokens_details": null
+      },
+      "analyst": {
+        "prompt_tokens": 1317,
+        "total_tokens": 1717,
+        "completion_tokens": 400,
+        "prompt_tokens_details": null
+      },
+      "critic": {
+        "prompt_tokens": 1736,
+        "total_tokens": 2136,
+        "completion_tokens": 400,
+        "prompt_tokens_details": null
+      },
+      "coordinator_finalize": {
+        "prompt_tokens": 2154,
+        "total_tokens": 2554,
+        "completion_tokens": 400,
+        "prompt_tokens_details": null
+      }
+    },
+    "usage": {
+      "prompt_tokens": 6650,
+      "total_tokens": 8650,
+      "completion_tokens": 2000
+    },
+    "behavior_metrics": {
+      "decomposition_rate": 0.0,
+      "evidence_grounding_rate": 0.0,
+      "revision_after_critique_rate": 0.0,
+      "premature_finalization_rate": 1.0,
+      "unsupported_claim_rate": 0.0
+    },
+    "schema_validity": {
+      "coordinator_plan": {
+        "is_valid": false,
+        "missing_headers": [
+          "Problem Restatement",
+          "Success Criteria",
+          "Plan",
+          "Risks and Unknowns",
+          "Research Brief"
+        ]
+      },
+      "researcher": {
+        "is_valid": false,
+        "missing_headers": [
+          "Evidence and Observations",
+          "Options",
+          "Assumptions",
+          "Open Questions",
+          "Research Handoff"
+        ]
+      },
+      "analyst": {
+        "is_valid": false,
+        "missing_headers": [
+          "Core Answer",
+          "Reasoning",
+          "Caveats",
+          "Draft Deliverable"
+        ]
+      },
+      "critic": {
+        "is_valid": false,
+        "missing_headers": [
+          "Major Issues",
+          "Minor Issues",
+          "Missing Evidence",
+          "Required Revisions"
+        ]
+      },
+      "coordinator_finalize": {
+        "is_valid": false,
+        "missing_headers": [
+          "Final Answer",
+          "Decision Rationale",
+          "Residual Risks"
+        ]
+      }
+    }
+  }
+}

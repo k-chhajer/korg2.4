@@ -8,7 +8,7 @@ Current Milestone 1 runtime:
 - Lucas reviews Harper and Benjamin, then critiques
 - captain synthesizes the final answer
 
-Usage:
+Usage: 
 
 ```powershell
 python scripts/run_baseline.py

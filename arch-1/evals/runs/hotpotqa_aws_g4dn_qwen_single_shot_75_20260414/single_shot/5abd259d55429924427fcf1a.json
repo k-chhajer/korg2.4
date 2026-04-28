@@ -1,0 +1,134 @@
+{
+  "run_id": "5abd259d55429924427fcf1a",
+  "architecture": "single_shot_baseline",
+  "config_name": "qwen3_8b_colab_t4_eval",
+  "config_path": "/home/ubuntu/arch-1/implementation/configs/qwen3_8b_colab_t4_eval.json",
+  "started_at_utc": "2026-04-14T20:25:25.229160+00:00",
+  "total_elapsed_sec": 9.704937051999991,
+  "input": "Are both Dictyosperma, and Huernia described as a genus?",
+  "task": {
+    "id": "5abd259d55429924427fcf1a",
+    "prompt": "Are both Dictyosperma, and Huernia described as a genus?",
+    "domain": "multi_hop_qa",
+    "benchmark_name": "hotpotqa_distractor",
+    "benchmark_split": "dev",
+    "task_type": "open_qa",
+    "context": "[1] Dictyosperma\nDictyosperma is a monotypic genus of flowering plant in the palm family found in the Mascarene Islands in the Indian Ocean (Mauritius, R\u00e9union and Rodrigues). The sole species, Dictyosperma album, is widely cultivated in the tropics but has been farmed to near extinction in its native habitat. It is commonly called princess palm or hurricane palm, the latter owing to its ability to withstand strong winds by easily shedding leaves. It is closely related to, and resembles, palms in the \"Archontophoenix\" genus. The genus is named from two Greek words meaning \"net\" and \"seed\" and the epithet is Latin for \"white\", the common color of the crownshaft at the top of the trunk.\n\n[2] Huernia\nThe genus Huernia (family Apocynaceae, subfamily Asclepiadoideae) consists of stem succulents from Eastern and Southern Africa, first described as a genus in 1810. The flowers are five-lobed, usually somewhat more funnel- or bell-shaped than in the closely related genus \"Stapelia\", and often striped vividly in contrasting colours or tones, some glossy, others matt and wrinkled depending on the species concerned. To pollinate, the flowers attract flies by emitting a scent similar to that of carrion. The genus is considered close to the genera \"Stapelia\" and \"Hoodia\". The name is in honour of Justin Heurnius (1587\u20131652) a Dutch missionary who is reputed to have been the first collector of South African Cape plants. His name was actually mis-spelt by the collector.",
+    "objectives": [],
+    "constraints": [],
+    "deliverable": "Answer the question using only the provided context. Start with a short answer phrase, then briefly justify it.",
+    "evaluation_criteria": [
+      "Answer should match the gold answer under official normalization.",
+      "Reasoning should rely on the provided context."
+    ],
+    "references": [
+      "Dictyosperma",
+      "Huernia"
+    ],
+    "reference_answers": [
+      "yes"
+    ],
+    "choices": [],
+    "correct_choice": null,
+    "checks": {},
+    "metadata": {
+      "source_dataset": "HotpotQA",
+      "question_type": "comparison",
+      "supporting_facts": [
+        [
+          "Dictyosperma",
+          0
+        ],
+        [
+          "Huernia",
+          0
+        ]
+      ]
+    }
+  },
+  "metadata": {
+    "source_dataset": "HotpotQA",
+    "question_type": "comparison",
+    "supporting_facts": [
+      [
+        "Dictyosperma",
+        0
+      ],
+      [
+        "Huernia",
+        0
+      ]
+    ]
+  },
+  "steps": [
+    {
+      "role": "single_shot",
+      "model": "Qwen/Qwen3-8B-AWQ",
+      "temperature": 0.0,
+      "max_tokens": 1400,
+      "system_prompt": "You are a careful single-model baseline for controlled research evaluation. Follow the task exactly, rely on the provided context when available, and avoid unsupported claims.",
+      "user_prompt": "<task_prompt>\nAre both Dictyosperma, and Huernia described as a genus?\n</task_prompt>\n\n<task_domain>\nmulti_hop_qa\n</task_domain>\n\n<benchmark_name>\nhotpotqa_distractor\n</benchmark_name>\n\n<benchmark_split>\ndev\n</benchmark_split>\n\n<task_type>\nopen_qa\n</task_type>\n\n<task_context>\n[1] Dictyosperma\nDictyosperma is a monotypic genus of flowering plant in the palm family found in the Mascarene Islands in the Indian Ocean (Mauritius, R\u00e9union and Rodrigues). The sole species, Dictyosperma album, is widely cultivated in the tropics but has been farmed to near extinction in its native habitat. It is commonly called princess palm or hurricane palm, the latter owing to its ability to withstand strong winds by easily shedding leaves. It is closely related to, and resembles, palms in the \"Archontophoenix\" genus. The genus is named from two Greek words meaning \"net\" and \"seed\" and the epithet is Latin for \"white\", the common color of the crownshaft at the top of the trunk.\n\n[2] Huernia\nThe genus Huernia (family Apocynaceae, subfamily Asclepiadoideae) consists of stem succulents from Eastern and Southern Africa, first described as a genus in 1810. The flowers are five-lobed, usually somewhat more funnel- or bell-shaped than in the closely related genus \"Stapelia\", and often striped vividly in contrasting colours or tones, some glossy, others matt and wrinkled depending on the species concerned. To pollinate, the flowers attract flies by emitting a scent similar to that of carrion. The genus is considered close to the genera \"Stapelia\" and \"Hoodia\". The name is in honour of Justin Heurnius (1587\u20131652) a Dutch missionary who is reputed to have been the first collector of South African Cape plants. His name was actually mis-spelt by the collector.\n</task_context>\n\n<deliverable>\nAnswer the question using only the provided context. Start with a short answer phrase, then briefly justify it.\n</deliverable>\n\n<evaluation_criteria>\n- Answer should match the gold answer under official normalization.\n- Reasoning should rely on the provided context.\n</evaluation_criteria>\n\n<provided_references>\n- Dictyosperma\n- Huernia\n</provided_references>\n\nSolve the task directly in one response.\n\nBegin with the shortest direct answer you can justify, then briefly justify it.",
+      "response": "<think>\nOkay, let's tackle this question. The user is asking if both Dictyosperma and Huernia are described as a genus. \n\nFirst, I need to check the provided context. Looking at the first reference, [1] talks about Dictyosperma. It starts by saying \"Dictyosperma is a monotypic genus of flowering plant...\" So that confirms that Dictyosperma is indeed a genus.\n\nThen, the second reference, [2], discusses Huernia. It states \"The genus Huernia (family Apocynaceae...\" which clearly identifies Huernia as a genus as well. \n\nSo both entries in the context describe each as a genus. The answer should be yes. The justification is based on the context provided, which explicitly mentions both names as genera. No need to go beyond the given information. The answer should be straightforward.\n</think>\n\nYes, both Dictyosperma and Huernia are described as genera. The context explicitly states that Dictyosperma is a \"monotypic genus\" and Huernia is referred to as a \"genus\" in its taxonomic description.",
+      "elapsed_sec": 9.704783622000036,
+      "usage": {
+        "prompt_tokens": 587,
+        "total_tokens": 830,
+        "completion_tokens": 243,
+        "prompt_tokens_details": null
+      }
+    }
+  ],
+  "final_stage": "<think>\nOkay, let's tackle this question. The user is asking if both Dictyosperma and Huernia are described as a genus. \n\nFirst, I need to check the provided context. Looking at the first reference, [1] talks about Dictyosperma. It starts by saying \"Dictyosperma is a monotypic genus of flowering plant...\" So that confirms that Dictyosperma is indeed a genus.\n\nThen, the second reference, [2], discusses Huernia. It states \"The genus Huernia (family Apocynaceae...\" which clearly identifies Huernia as a genus as well. \n\nSo both entries in the context describe each as a genus. The answer should be yes. The justification is based on the context provided, which explicitly mentions both names as genera. No need to go beyond the given information. The answer should be straightforward.\n</think>\n\nYes, both Dictyosperma and Huernia are described as genera. The context explicitly states that Dictyosperma is a \"monotypic genus\" and Huernia is referred to as a \"genus\" in its taxonomic description.",
+  "final_answer": "<think>\nOkay, let's tackle this question. The user is asking if both Dictyosperma and Huernia are described as a genus. \n\nFirst, I need to check the provided context. Looking at the first reference, [1] talks about Dictyosperma. It starts by saying \"Dictyosperma is a monotypic genus of flowering plant...\" So that confirms that Dictyosperma is indeed a genus.\n\nThen, the second reference, [2], discusses Huernia. It states \"The genus Huernia (family Apocynaceae...\" which clearly identifies Huernia as a genus as well. \n\nSo both entries in the context describe each as a genus. The answer should be yes. The justification is based on the context provided, which explicitly mentions both names as genera. No need to go beyond the given information. The answer should be straightforward.\n</think>\n\nYes, both Dictyosperma and Huernia are described as genera. The context explicitly states that Dictyosperma is a \"monotypic genus\" and Huernia is referred to as a \"genus\" in its taxonomic description.",
+  "evaluation": {
+    "domain": "multi_hop_qa",
+    "deliverable": "Answer the question using only the provided context. Start with a short answer phrase, then briefly justify it.",
+    "evaluation_criteria": [
+      "Answer should match the gold answer under official normalization.",
+      "Reasoning should rely on the provided context."
+    ],
+    "reference_count": 2,
+    "check_count": 0,
+    "passed": null,
+    "score": null,
+    "answer_word_count": 157,
+    "answer_char_count": 997,
+    "checks": [],
+    "reference": {
+      "benchmark_name": "hotpotqa_distractor",
+      "benchmark_split": "dev",
+      "task_type": "open_qa",
+      "metrics": {
+        "answer_em": 0.0,
+        "answer_f1": 0.014388489208633093,
+        "supporting_fact_title_recall": 1.0,
+        "supporting_fact_title_precision": 1.0,
+        "supporting_fact_context_coverage": 1.0
+      },
+      "scored_answer": "<think>\nOkay, let's tackle this question. The user is asking if both Dictyosperma and Huernia are described as a genus. \n\nFirst, I need to check the provided context. Looking at the first reference, [1] talks about Dictyosperma. It starts by saying \"Dictyosperma is a monotypic genus of flowering plant...\" So that confirms that Dictyosperma is indeed a genus.\n\nThen, the second reference, [2], discusses Huernia. It states \"The genus Huernia (family Apocynaceae...\" which clearly identifies Huernia as a genus as well. \n\nSo both entries in the context describe each as a genus. The answer should be yes. The justification is based on the context provided, which explicitly mentions both names as genera. No need to go beyond the given information. The answer should be straightforward.\n</think>\n\nYes, both Dictyosperma and Huernia are described as genera. The context explicitly states that Dictyosperma is a \"monotypic genus\" and Huernia is referred to as a \"genus\" in its taxonomic description.",
+      "predicted_choice": null,
+      "choice_count": 0,
+      "reference_answer_count": 1
+    }
+  },
+  "summary": {
+    "stage_count": 1,
+    "model_call_count": 1,
+    "per_role_elapsed_sec": {
+      "single_shot": 9.704783622000036
+    },
+    "per_role_usage": {
+      "single_shot": {
+        "prompt_tokens": 587,
+        "total_tokens": 830,
+        "completion_tokens": 243,
+        "prompt_tokens_details": null
+      }
+    },
+    "usage": {
+      "prompt_tokens": 587,
+      "total_tokens": 830,
+      "completion_tokens": 243
+    }
+  }
+}

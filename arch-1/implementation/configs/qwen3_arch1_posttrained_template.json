@@ -1,0 +1,74 @@
+{
+  "name": "qwen3_arch1_posttrained_template",
+  "provider": {
+    "api_base": "http://localhost:8000/v1",
+    "api_key_env": "OPENAI_API_KEY",
+    "timeout_sec": 240
+  },
+  "defaults": {
+    "model": "Qwen/Qwen3-8B-Instruct",
+    "temperature": 0.0,
+    "max_tokens": 1400
+  },
+  "architecture": {
+    "family": "architecture_1",
+    "description": "Paper-grade Architecture 1 control with four separately post-trained Qwen3 role specialists in a fixed coordinator -> researcher -> analyst -> critic -> coordinator topology.",
+    "specialization_source": "post_trained_role_specialists",
+    "stage_sequence": [
+      "coordinator_plan",
+      "researcher",
+      "analyst",
+      "critic",
+      "coordinator_finalize"
+    ],
+    "paper_reference_role_order": [
+      "coordinator",
+      "researcher",
+      "analyst",
+      "critic",
+      "coordinator"
+    ]
+  },
+  "roles": {
+    "coordinator_plan": {
+      "system_prompt_path": "../prompts/coordinator_plan.md",
+      "model": "korg/qwen3-8b-coordinator-sft",
+      "role_specialization": "coordinator",
+      "checkpoint_name": "korg/qwen3-8b-coordinator-sft",
+      "temperature": 0.0,
+      "max_tokens": 1200
+    },
+    "researcher": {
+      "system_prompt_path": "../prompts/researcher.md",
+      "model": "korg/qwen3-8b-researcher-sft",
+      "role_specialization": "researcher",
+      "checkpoint_name": "korg/qwen3-8b-researcher-sft",
+      "temperature": 0.0,
+      "max_tokens": 1600
+    },
+    "analyst": {
+      "system_prompt_path": "../prompts/analyst.md",
+      "model": "korg/qwen3-8b-analyst-sft",
+      "role_specialization": "analyst",
+      "checkpoint_name": "korg/qwen3-8b-analyst-sft",
+      "temperature": 0.0,
+      "max_tokens": 1400
+    },
+    "critic": {
+      "system_prompt_path": "../prompts/critic.md",
+      "model": "korg/qwen3-8b-critic-sft",
+      "role_specialization": "critic",
+      "checkpoint_name": "korg/qwen3-8b-critic-sft",
+      "temperature": 0.0,
+      "max_tokens": 1200
+    },
+    "coordinator_finalize": {
+      "system_prompt_path": "../prompts/coordinator_finalize.md",
+      "model": "korg/qwen3-8b-coordinator-sft",
+      "role_specialization": "coordinator",
+      "checkpoint_name": "korg/qwen3-8b-coordinator-sft-v2",
+      "temperature": 0.0,
+      "max_tokens": 1400
+    }
+  }
+}
